@@ -7,6 +7,10 @@ public class InputManager : MonoBehaviour
 
     private PlayerControls playerControls;
 
+    private AnimatorManager animatorManager;
+
+    private float moveAmount;
+
     //存储玩家的移动输入值
     [SerializeField] private Vector2 movementInput;
 
@@ -14,6 +18,10 @@ public class InputManager : MonoBehaviour
     public float horizontalInput;
 
 
+    private void Awake()
+    {
+        animatorManager = GetComponent<AnimatorManager>();
+    }
 
     private void OnEnable()
     {
@@ -49,5 +57,11 @@ public class InputManager : MonoBehaviour
     {
         verticalInput = movementInput.y;
         horizontalInput = movementInput.x;
+
+        //计算移动量
+        //Mathf.Clamp01将结果限制在 [0, 1] 范围内
+        moveAmount = Mathf.Clamp01(Mathf.Abs(horizontalInput) + Mathf.Abs(verticalInput));
+
+        animatorManager.UpdateAnimatorValues(0, moveAmount);
     }
 }
