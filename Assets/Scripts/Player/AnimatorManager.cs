@@ -19,7 +19,7 @@ public class AnimatorManager : MonoBehaviour
     }
 
     //通过传入的水平和垂直输入值，更新动画参数
-    public void UpdateAnimatorValues(float horizontalMovement, float verticalMovement)
+    public void UpdateAnimatorValues(float horizontalMovement, float verticalMovement, bool isSprinting)
     {
         float snappedHorizontal;
         float snappedVertical;
@@ -70,9 +70,15 @@ public class AnimatorManager : MonoBehaviour
         }
         #endregion
 
+        //播放冲刺动画逻辑
+        if (isSprinting)
+        {
+            snappedHorizontal = horizontalMovement;
+            snappedVertical = 2f;
+        }
+
         //设置动画参数
         animator.SetFloat(horizontal, snappedHorizontal, 0.1f, Time.deltaTime);
         animator.SetFloat(vertical, snappedVertical, 0.1f, Time.deltaTime);
     }
-
 }
