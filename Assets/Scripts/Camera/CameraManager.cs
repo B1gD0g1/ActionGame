@@ -8,6 +8,7 @@ public class CameraManager : MonoBehaviour
 
     [SerializeField] private Transform playerTransform;
 
+
     //摄像机枢轴，用于控制垂直旋转（视角上下看）
     [SerializeField] Transform cameraPivot;
     //用于存储摄像机当前位置与目标位置之间的速度差
@@ -28,6 +29,7 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float maximumPivotAngle = 30f;
 
 
+
     private void Awake()
     {
         //锁定鼠标光标，使其不能移出游戏窗口，并隐藏光标
@@ -40,7 +42,6 @@ public class CameraManager : MonoBehaviour
     private void Update()
     {
         inputManager = FindObjectOfType<InputManager>();
-
     }
 
     public void HandleAllCameraMovement()
