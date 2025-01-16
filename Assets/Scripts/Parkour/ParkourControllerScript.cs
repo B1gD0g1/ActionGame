@@ -10,7 +10,14 @@ public class ParkourControllerScript : MonoBehaviour
 
     private void Update()
     {
-        environmentCheck.CheckObstacle();
+        var hitData = environmentCheck.CheckObstacle();
+
+
+        if (hitData.hitFound)
+        {
+            Debug.Log("ºÏ≤‚µΩ’œ∞≠" + hitData.hitInfo.transform.name);
+        }
+
     }
 
 }
