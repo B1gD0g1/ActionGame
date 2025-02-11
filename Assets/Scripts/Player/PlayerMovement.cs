@@ -6,12 +6,16 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("脚本引用")]
     private InputManager inputManager;
+    private AnimatorManager animatorManager;
 
     [Header("移动")]
     private Vector3 moveDirection;
     [SerializeField] private Transform camObject;
-    //private Rigidbody playerRigidbody;
     private CharacterController playerController;
+    [SerializeField] private Vector3 velocity; // 用于保存角色当前的速度
+    //记录垂直速度
+    private float ySpeed;
+
 
     [SerializeField] private float walkingSpeed = 2f;
     [SerializeField] private float runningSpeed = 6f;
@@ -20,40 +24,39 @@ public class PlayerMovement : MonoBehaviour
     //记录最后一次有效的移动方向
     private Vector3 lastMoveDirection;
 
-    [Header("移动状态")]
+    [Header("状态")]
     public bool isMoving;
     public bool isRunning;
     public bool isGrounded;
+    public bool isClimbing = false;
 
-    [Header("重力")]
-    [SerializeField] private float gravity = -9.81f;
-    [SerializeField] private float fallingSpeed = 5f;
+    private bool hasControl = true;
 
-    [Header("水平垂直方向速度")]
-    [SerializeField]private Vector3 velocity; // 用于保存角色当前的速度
 
     [Header("检测地面")]
     [SerializeField] private float surfaceCheckRadius = 0.3f;
     [SerializeField] private Vector3 surfaceCheckOffset;
     [SerializeField] private LayerMask surfaceLayer;
-    private bool onSurface;
+    //private bool onSurface;
 
 
+    private Quaternion targetRotation;
 
     private void Awake()
     {
         inputManager = GetComponent<InputManager>();
         playerController = GetComponent<CharacterController>();
-        //playerRigidbody = GetComponent<Rigidbody>();
+        animatorManager = GetComponent<AnimatorManager>();
     }
 
     public void HandleAllMovement()
     {
-        ApplyGravity();
+        if (hasControl == false)
+            return;
+        
         HandleMovement();
         HandleRotation();
-        surfaceCheck();
-        Debug.Log("玩家在地面" + onSurface);
+
     }
 
     private void HandleMovement()
@@ -88,16 +91,11 @@ public class PlayerMovement : MonoBehaviour
             lastMoveDirection = moveDirection;
         }
 
-        // 使用 Rigidbody 来应用移动
-        //Vector3 movementVelocity = moveDirection;
-        //movementVelocity.y = playerRigidbody.velocity.y;
-        //playerRigidbody.velocity = movementVelocity;
+        surfaceCheck();
+        Debug.Log("isGround = " + isGrounded);
+        ApplyGravity();
 
-        //只更新 X 和 Z 方向的速度，保留了当前的 Y 轴速度
-        //playerRigidbody.velocity = new Vector3(moveDirection.x, playerRigidbody.velocity.y, moveDirection.z);
-
-
-        velocity = new Vector3(moveDirection.x, velocity.y, moveDirection.z); // 更新水平速度 保持垂直速度
+        velocity = new Vector3(moveDirection.x, ySpeed, moveDirection.z); // 更新水平速度 保持垂直速度
 
         // 使用 CharacterController 的 Move 函数来移动角色
         playerController.Move(velocity * Time.deltaTime); 
@@ -119,7 +117,7 @@ public class PlayerMovement : MonoBehaviour
         if (targetDirection.magnitude == 0)
             return;
 
-        Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+        targetRotation = Quaternion.LookRotation(targetDirection);
         Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
         transform.rotation = playerRotation;
@@ -128,32 +126,39 @@ public class PlayerMovement : MonoBehaviour
     private void ApplyGravity()
     {
         // 只有在角色不在地面时才应用重力
-        if (!onSurface)
+        if (isGrounded == false)
         {
-            fallingSpeed += gravity * Time.deltaTime;
-
-            //velocity.y += gravity * Time.deltaTime;
+            ySpeed += Physics.gravity.y * Time.deltaTime;
         }
         else
         {
             // 如果在地面上，重置垂直速度，防止角色被卡住
-            fallingSpeed = 0f;
-            //if (velocity.y < 0)
-            //{
-            //    velocity.y = 0f; // 设置一个较小的负值，防止角色在地面上悬浮
-            //}
+            ySpeed = -0.5f;
         }
 
         //更新垂直方向的速度
-        velocity.y = fallingSpeed;
-
-        // 使用 CharacterController 的 Move 来移动角色
-        //playerController.Move(velocity * Time.deltaTime);
+        velocity.y = ySpeed;
     }
 
+    public void SetControl(bool hasControl)
+    {
+        this.hasControl = hasControl;
+        
+        playerController.enabled = hasControl;
+
+        if (hasControl == false)
+        {
+            animatorManager.SetFloatAnimator("Vertical", 0f);
+            animatorManager.SetFloatAnimator("Horizontal", 0f);
+            targetRotation = transform.rotation;
+        }
+    }
+
+    //地面检测
     private void surfaceCheck()
     {
-        onSurface = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset), surfaceCheckRadius, surfaceLayer);
+        isGrounded = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset), 
+            surfaceCheckRadius, surfaceLayer);
     }
 
     private void OnDrawGizmosSelected()
@@ -162,45 +167,5 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.DrawSphere(transform.TransformPoint(surfaceCheckOffset), surfaceCheckRadius);
     }
 
-    //private void ApplyGravity()
-    //{
-    //    if (isGrounded == false) //玩家不在地面时
-    //    {
-    //        //Vector3 currentVelocity = playerRigidbody.velocity;
-
-    //        // 计算目标垂直速度
-    //        float targetYVelocity = gravity * fallSpeed * Time.deltaTime;
-
-    //        // 使用 Mathf.Lerp 平滑过渡当前速度与目标速度
-    //        //currentVelocity.y = Mathf.Lerp(currentVelocity.y, targetYVelocity, 0.1f); // 0.1f 控制过渡速率
-    //        //playerRigidbody.velocity = currentVelocity;
-
-    //        // 使用 Mathf.Lerp 平滑过渡当前速度与目标速度
-    //        velocity.y = Mathf.Lerp(velocity.y, targetYVelocity, 0.1f); // 0.1f 控制过渡速率
-    //    }
-    //    else
-    //    {
-    //        // 如果玩家在地面上，可以重置垂直速度
-    //        if (velocity.y < 0)
-    //        {
-    //            velocity.y = -2f; // 设置一个小的负值来保持地面上的速度
-    //        }
-    //    }
-    //}
-
-    //private void OnCollisionStay(Collision collision)
-    //{
-    //    if (collision.gameObject.CompareTag("Ground")) // 仅当接触地面时
-    //    {
-    //        isGrounded = true;
-    //    }
-    //}
-
-    //private void OnCollisionEnter(Collision collision)
-    //{
-    //    if (collision.gameObject.CompareTag("Ground")) // 仅当接触地面时
-    //    {
-    //        isGrounded = false;
-    //    }
-    //}
+    public float RotationSpeed => rotationSpeed;
 }

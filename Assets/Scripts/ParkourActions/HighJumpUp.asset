@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: HighJumpUp
   m_EditorClassIdentifier: 
   animationName: HighJumpUp
-  minimumHeight: 1
-  maximumHeight: 1.5
+  minimumHeight: 1.01
+  maximumHeight: 1.8
+  rotateToObstacle: 1

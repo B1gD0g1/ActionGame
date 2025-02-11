@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class InputManager : MonoBehaviour
     private PlayerControls playerControls;
     private AnimatorManager animatorManager;
     private PlayerMovement playerMovement;
+    private ParkourControllerScript parkourController;
 
     public float moveAmount;
 
@@ -24,11 +26,15 @@ public class InputManager : MonoBehaviour
 
     [Header("移动按钮")]
     [SerializeField] private bool sprintInput;
+    [SerializeField] private bool jumpInput;  //控制跳跃输入
+
+
 
     private void Awake()
     {
         animatorManager = GetComponent<AnimatorManager>();
         playerMovement = GetComponent<PlayerMovement>();
+        parkourController = GetComponent<ParkourControllerScript>();
     }
 
     private void OnEnable()
@@ -39,14 +45,19 @@ public class InputManager : MonoBehaviour
 
             // 将事件处理方法绑定到 Movement 的 performed 事件
             playerControls.PlayerMovement.Movement.performed += InputManager_OnMovementPerformed;
-
             playerControls.PlayerMovement.CameraMovement.performed += InputManager_OnCameraMovementPerformed;
-
             playerControls.PlayerActions.Sprint.performed += InputManager_OnSprintPerformed;
             playerControls.PlayerActions.Sprint.canceled += InputManager_OnSprintCanceled;
+            playerControls.PlayerActions.Jump.performed += InputManager_OnJumpPerformed;
         }
+
         // 启用 PlayerControls，输入事件开始监听
         playerControls.Enable();
+    }
+
+    private void InputManager_OnJumpPerformed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        jumpInput = true;
     }
 
     private void InputManager_OnCameraMovementPerformed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -81,17 +92,39 @@ public class InputManager : MonoBehaviour
     {
         HandleMovementInput();
         HandleSprintInput();
+        HandleJumpInput();  // 处理跳跃输入
     }
 
     private void HandleMovementInput()
     {
-        //玩家移动输入
-        verticalInput = movementInput.y;
-        horizontalInput = movementInput.x;
+        if (playerMovement.isClimbing)
+        {
+            // 只允许垂直输入（水平输入为 0）
+            verticalInput = movementInput.y;
+            horizontalInput = 0;  // 禁止水平输入
 
-        //摄像机移动输入
-        cameraInputX = cameraInput.x;
-        cameraInputY = cameraInput.y;
+            // 摄像机输入不变
+            cameraInputX = cameraInput.x;
+            cameraInputY = cameraInput.y;
+        }
+        else
+        {
+            //玩家移动输入
+            verticalInput = movementInput.y;
+            horizontalInput = movementInput.x;
+
+            //摄像机移动输入
+            cameraInputX = cameraInput.x;
+            cameraInputY = cameraInput.y;
+        }
+
+        ////玩家移动输入
+        //verticalInput = movementInput.y;
+        //horizontalInput = movementInput.x;
+
+        ////摄像机移动输入
+        //cameraInputX = cameraInput.x;
+        //cameraInputY = cameraInput.y;
 
         //计算移动量
         //Mathf.Clamp01将结果限制在 [0, 1] 范围内
@@ -111,5 +144,20 @@ public class InputManager : MonoBehaviour
         {
             playerMovement.isRunning = false;
         }
+    }
+
+    private void HandleJumpInput()
+    {
+        if (jumpInput)
+        {
+            parkourController.TryStartParkour();  // 尝试开始跑酷/攀爬动作
+            jumpInput = false;  // 重置跳跃输入
+        }
+    }
+
+    // 设置攀爬状态
+    public void SetClimbingState(bool isClimbing)
+    {
+        playerMovement.isClimbing = isClimbing;
     }
 }

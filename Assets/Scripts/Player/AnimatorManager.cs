@@ -5,10 +5,11 @@ using UnityEngine;
 public class AnimatorManager : MonoBehaviour
 {
 
-    Animator animator;
+    private Animator animator;
 
     private int horizontal;
     private int vertical;
+    private int isClimbing;  // 攀爬状态的动画参数
 
 
     private void Awake()
@@ -16,6 +17,7 @@ public class AnimatorManager : MonoBehaviour
         animator = GetComponent<Animator>();
         horizontal = Animator.StringToHash("Horizontal");
         vertical = Animator.StringToHash("Vertical");
+        isClimbing = Animator.StringToHash("IsClimbing");
     }
 
     //通过传入的水平和垂直输入值，更新动画参数
@@ -80,5 +82,16 @@ public class AnimatorManager : MonoBehaviour
         //设置动画参数
         animator.SetFloat(horizontal, snappedHorizontal, 0.1f, Time.deltaTime);
         animator.SetFloat(vertical, snappedVertical, 0.1f, Time.deltaTime);
+    }
+
+    // 设置攀爬动画的状态
+    public void SetClimbingState(bool isClimbingState)
+    {
+        animator.SetBool(isClimbing, isClimbingState);
+    }
+
+    public void SetFloatAnimator(string id, float value)
+    {
+        animator.SetFloat(id, value); 
     }
 }
