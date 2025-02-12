@@ -92,7 +92,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         surfaceCheck();
-        Debug.Log("isGround = " + isGrounded);
+        //Debug.Log("isGround = " + isGrounded);
         ApplyGravity();
 
         velocity = new Vector3(moveDirection.x, ySpeed, moveDirection.z); // 更新水平速度 保持垂直速度

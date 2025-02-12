@@ -136,7 +136,7 @@ public class InputManager : MonoBehaviour
     //ÅĞ¶Ï³å´Ì×´Ì¬
     private void HandleSprintInput()
     {
-        if (sprintInput && moveAmount > 0.5f)
+        if (sprintInput && moveAmount > 0.5f && playerMovement.isGrounded == true)
         {
             playerMovement.isRunning = true;
         }
@@ -148,7 +148,7 @@ public class InputManager : MonoBehaviour
 
     private void HandleJumpInput()
     {
-        if (jumpInput)
+        if (jumpInput && !playerMovement.isClimbing)
         {
             parkourController.TryStartParkour();  // ³¢ÊÔ¿ªÊ¼ÅÜ¿á/ÅÊÅÀ¶¯×÷
             jumpInput = false;  // ÖØÖÃÌøÔ¾ÊäÈë

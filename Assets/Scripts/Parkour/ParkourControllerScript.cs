@@ -79,8 +79,15 @@ public class ParkourControllerScript : MonoBehaviour
                     playerMovement.RotationSpeed * Time.deltaTime);
             }
 
+            if (action.EnableTargetMatching)
+            {
+                MatchTarget(action);
+            }
+
             yield return null;
         }
+
+        yield return new WaitForSeconds(action.PostActionDelay);
 
         // 完成攀爬后，恢复正常输入模式
         FindObjectOfType<InputManager>().SetClimbingState(false);
@@ -88,5 +95,20 @@ public class ParkourControllerScript : MonoBehaviour
         playerMovement.SetControl(true);
 
         playerInAction = false;
+    }
+
+    private void MatchTarget(NewParkourAction action)
+    {
+        if (animator.isMatchingTarget)
+        {
+            return;
+        }
+
+        animator.MatchTarget(action.MatchPosition, 
+            transform.rotation, 
+            action.MatchBodyPart,
+            new MatchTargetWeightMask(action.MatchPositionWeight, 0), 
+            action.MatchStartTime, 
+            action.MatchTargetTime);
     }
 }

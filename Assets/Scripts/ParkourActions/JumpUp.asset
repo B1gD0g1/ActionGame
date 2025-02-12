@@ -15,3 +15,8 @@ MonoBehaviour:
   animationName: JumpUp
   minimumHeight: 0.4
   maximumHeight: 1
+  rotateToObstacle: 0
+  enableTargetMatching: 1
+  matchBodyPart: 3
+  matchStartTime: 0.43
+  matchTargetTime: 0.7
