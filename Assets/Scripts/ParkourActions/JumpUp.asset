@@ -13,10 +13,13 @@ MonoBehaviour:
   m_Name: JumpUp
   m_EditorClassIdentifier: 
   animationName: JumpUp
+  obstacleTag: 
   minimumHeight: 0.4
   maximumHeight: 1
   rotateToObstacle: 0
+  postActionDelay: 0
   enableTargetMatching: 1
   matchBodyPart: 3
   matchStartTime: 0.43
   matchTargetTime: 0.7
+  matchPositionWeight: {x: 0, y: 1, z: 0}
