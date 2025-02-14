@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: ClimbUp
   m_EditorClassIdentifier: 
   animationName: ClimbUp
+  obstacleTag: 
   minimumHeight: 1.8
   maximumHeight: 3
   rotateToObstacle: 1
-  postActionDelay: 0.4
+  postActionDelay: 0.5
   enableTargetMatching: 1
   matchBodyPart: 5
   matchStartTime: 0.08

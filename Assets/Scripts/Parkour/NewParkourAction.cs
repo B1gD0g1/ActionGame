@@ -7,11 +7,14 @@ public class NewParkourAction : ScriptableObject
 {
 
     [SerializeField] private string animationName;
+    [SerializeField] private string obstacleTag;
     [SerializeField] private float minimumHeight;
     [SerializeField] private float maximumHeight;
 
+
     [SerializeField] private bool rotateToObstacle;
     [SerializeField] private float postActionDelay;
+
 
     [Header("目标匹配 TargetMatching")]
     [SerializeField] private bool enableTargetMatching = true;
@@ -29,6 +32,15 @@ public class NewParkourAction : ScriptableObject
 
     public bool CheckIfAvailable(ObstacleInfo hitData, Transform player)
     {
+        //检查标签  Check Tag
+        if (string.IsNullOrEmpty(obstacleTag) == false 
+            && hitData.hitInfo.transform.tag != obstacleTag)
+        {
+            return false;
+        }
+
+
+        //高度 height
         float checkHeight = hitData.heightHitInfo.point.y - player.position.y;
 
         if (checkHeight < minimumHeight || checkHeight > maximumHeight)
