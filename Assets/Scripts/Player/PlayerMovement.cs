@@ -7,6 +7,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("脚本引用")]
     private InputManager inputManager;
     private AnimatorManager animatorManager;
+    private EnvironmentCheck environmentCheck;
 
     [Header("移动")]
     private Vector3 moveDirection;
@@ -30,6 +31,9 @@ public class PlayerMovement : MonoBehaviour
     public bool isGrounded;
     public bool isClimbing = false;
 
+    public bool playerOnLedge { get; set; }
+    public LedgeInfo ledgeInfo { get; set; }
+
     private bool hasControl = true;
 
 
@@ -47,6 +51,7 @@ public class PlayerMovement : MonoBehaviour
         inputManager = GetComponent<InputManager>();
         playerController = GetComponent<CharacterController>();
         animatorManager = GetComponent<AnimatorManager>();
+        environmentCheck = GetComponent<EnvironmentCheck>();
     }
 
     public void HandleAllMovement()
@@ -92,6 +97,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         surfaceCheck();
+        //animatorManager.SetBoolAnimator("onSurface", isGrounded);
         //Debug.Log("isGround = " + isGrounded);
         ApplyGravity();
 
@@ -134,6 +140,14 @@ public class PlayerMovement : MonoBehaviour
         {
             // 如果在地面上，重置垂直速度，防止角色被卡住
             ySpeed = -0.5f;
+
+            playerOnLedge = environmentCheck.CheckLedge(moveDirection, out LedgeInfo ledgeInfo);
+
+            if (playerOnLedge)
+            {
+                this.ledgeInfo = ledgeInfo;
+                Debug.Log("Player is on ledge");
+            }
         }
 
         //更新垂直方向的速度

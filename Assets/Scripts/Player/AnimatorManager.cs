@@ -94,4 +94,9 @@ public class AnimatorManager : MonoBehaviour
     {
         animator.SetFloat(id, value); 
     }
+
+    public void SetBoolAnimator(string name, bool value)
+    {
+        animator.SetBool(name, value);
+    }
 }

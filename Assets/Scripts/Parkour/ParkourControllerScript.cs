@@ -14,6 +14,9 @@ public class ParkourControllerScript : MonoBehaviour
     [Header("跑酷动作区域")]
     [SerializeField] private List<NewParkourAction> parkourActions;
 
+    [Header("跳下动作")]
+    [SerializeField] private NewParkourAction jumpDownParkourAction;
+
     private void Awake()
     {
         environmentCheck = GetComponent<EnvironmentCheck>();
@@ -42,6 +45,15 @@ public class ParkourControllerScript : MonoBehaviour
                     StartCoroutine(PerformParkourAction(action));
                     break;
                 }
+            }
+        }
+
+        if (playerMovement.playerOnLedge && playerInAction == false)
+        {
+            if (playerMovement.ledgeInfo.angle <= 50)
+            {
+                playerMovement.playerOnLedge = false;
+                StartCoroutine(PerformParkourAction(jumpDownParkourAction));
             }
         }
     }

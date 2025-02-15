@@ -153,6 +153,11 @@ public class InputManager : MonoBehaviour
             parkourController.TryStartParkour();  // 尝试开始跑酷/攀爬动作
             jumpInput = false;  // 重置跳跃输入
         }
+
+        //if (playerMovement.playerOnLedge)
+        //{
+        //    parkourController.TryStartParkour();
+        //}
     }
 
     // 设置攀爬状态
