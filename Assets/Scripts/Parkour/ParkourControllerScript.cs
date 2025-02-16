@@ -5,11 +5,15 @@ using UnityEngine;
 public class ParkourControllerScript : MonoBehaviour
 {
 
-    [SerializeField] private EnvironmentCheck environmentCheck;
-    [SerializeField] private PlayerMovement playerMovement;
-    private bool playerInAction;
+    private EnvironmentCheck environmentCheck;
+    private PlayerMovement playerMovement;
+    private InputManager inputManager;
+
     public Animator animator;
-    
+
+
+    private bool playerInAction;
+
 
     [Header("跑酷动作区域")]
     [SerializeField] private List<NewParkourAction> parkourActions;
@@ -21,6 +25,7 @@ public class ParkourControllerScript : MonoBehaviour
     {
         environmentCheck = GetComponent<EnvironmentCheck>();
         playerMovement = GetComponent<PlayerMovement>();
+        inputManager = GetComponent<InputManager>();
     }
 
     private void Update()
@@ -28,11 +33,11 @@ public class ParkourControllerScript : MonoBehaviour
       
     } 
 
-    public void TryStartParkour()
+    public void TryStartParkour(ObstacleInfo hitData)
     {
         if (playerInAction) return;
 
-        var hitData = environmentCheck.CheckObstacle();
+        //var hitData = environmentCheck.CheckObstacle();
 
         if (hitData.hitFound)
         {
@@ -48,11 +53,12 @@ public class ParkourControllerScript : MonoBehaviour
             }
         }
 
-        if (playerMovement.playerOnLedge && playerInAction == false)
+        if (playerMovement.IsOnLedge && playerInAction == false 
+            && hitData.hitFound == false && inputManager.GetJumpInput() == true)
         {
-            if (playerMovement.ledgeInfo.angle <= 50)
+            if (playerMovement.LedgeInfo.angle <= 50)
             {
-                playerMovement.playerOnLedge = false;
+                playerMovement.IsOnLedge = false;
                 StartCoroutine(PerformParkourAction(jumpDownParkourAction));
             }
         }
@@ -69,7 +75,7 @@ public class ParkourControllerScript : MonoBehaviour
         yield return null;
 
         // 通知输入管理器开始攀爬
-        FindObjectOfType<InputManager>().SetClimbingState(true);
+        inputManager.SetClimbingState(true);
 
         var animatorState = animator.GetNextAnimatorStateInfo(0);
         if (animatorState.IsName(action.AnimationName) == false)
@@ -107,7 +113,7 @@ public class ParkourControllerScript : MonoBehaviour
         yield return new WaitForSeconds(action.PostActionDelay);
 
         // 完成攀爬后，恢复正常输入模式
-        FindObjectOfType<InputManager>().SetClimbingState(false);
+        inputManager.SetClimbingState(false);
 
         playerMovement.SetControl(true);
 

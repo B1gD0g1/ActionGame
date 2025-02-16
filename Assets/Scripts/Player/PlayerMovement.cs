@@ -10,7 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private EnvironmentCheck environmentCheck;
 
     [Header("移动")]
-    private Vector3 moveDirection;
+    [SerializeField] private Vector3 moveDirection;
     [SerializeField] private Transform camObject;
     private CharacterController playerController;
     [SerializeField] private Vector3 velocity; // 用于保存角色当前的速度
@@ -30,9 +30,10 @@ public class PlayerMovement : MonoBehaviour
     public bool isRunning;
     public bool isGrounded;
     public bool isClimbing = false;
+    public bool isLedge;
 
-    public bool playerOnLedge { get; set; }
-    public LedgeInfo ledgeInfo { get; set; }
+    public bool IsOnLedge { get; set; }
+    public LedgeInfo LedgeInfo { get; set; }
 
     private bool hasControl = true;
 
@@ -56,12 +57,12 @@ public class PlayerMovement : MonoBehaviour
 
     public void HandleAllMovement()
     {
-        if (hasControl == false)
-            return;
-        
         HandleMovement();
         HandleRotation();
 
+        if (hasControl == false)
+            return;
+        
     }
 
     private void HandleMovement()
@@ -75,13 +76,13 @@ public class PlayerMovement : MonoBehaviour
         //移动逻辑
         if (isRunning)
         {
-            moveDirection = moveDirection * runningSpeed;
+            moveDirection *= runningSpeed;
         }
         else
         {
             if (inputManager.moveAmount > 0.5f)
             {
-                moveDirection = moveDirection * walkingSpeed;
+                moveDirection *= walkingSpeed;
                 isMoving = true;
             }
             else
@@ -90,21 +91,25 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
+        //moveDirection = requiredMoveDirection;
+
         //当有输入时，更新 lastMoveDirection
         if (moveDirection.magnitude > 0)
         {
             lastMoveDirection = moveDirection;
         }
 
+        velocity = Vector3.zero;
+
         surfaceCheck();
-        //animatorManager.SetBoolAnimator("onSurface", isGrounded);
+        animatorManager.SetBoolAnimator("isGrounded", isGrounded);
         //Debug.Log("isGround = " + isGrounded);
         ApplyGravity();
 
         velocity = new Vector3(moveDirection.x, ySpeed, moveDirection.z); // 更新水平速度 保持垂直速度
 
         // 使用 CharacterController 的 Move 函数来移动角色
-        playerController.Move(velocity * Time.deltaTime); 
+        playerController.Move(velocity * Time.deltaTime);
     }
 
     private void HandleRotation()
@@ -123,8 +128,15 @@ public class PlayerMovement : MonoBehaviour
         if (targetDirection.magnitude == 0)
             return;
 
+        //if (requiredMoveDirection.magnitude > 0.2f)
+        //{
+
+        //}
+
         targetRotation = Quaternion.LookRotation(targetDirection);
-        Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+
+        Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation, 
+            rotationSpeed * Time.deltaTime);
 
         transform.rotation = playerRotation;
     }
@@ -135,18 +147,21 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded == false)
         {
             ySpeed += Physics.gravity.y * Time.deltaTime;
+
+            velocity = transform.forward * walkingSpeed / 2;
         }
         else
         {
             // 如果在地面上，重置垂直速度，防止角色被卡住
             ySpeed = -0.5f;
 
-            playerOnLedge = environmentCheck.CheckLedge(moveDirection, out LedgeInfo ledgeInfo);
+            IsOnLedge = environmentCheck.CheckLedge(moveDirection, out LedgeInfo ledgeInfo);
 
-            if (playerOnLedge)
+            if (IsOnLedge)
             {
-                this.ledgeInfo = ledgeInfo;
-                Debug.Log("Player is on ledge");
+                LedgeInfo = ledgeInfo;
+                LedgeMovement();
+                //Debug.Log("Player is on ledge");
             }
         }
 
@@ -154,10 +169,23 @@ public class PlayerMovement : MonoBehaviour
         velocity.y = ySpeed;
     }
 
+    //障碍物上的移动输入
+    private void LedgeMovement()
+    {
+        float angle = Vector3.Angle(LedgeInfo.surfaceHit.normal, moveDirection);
+
+        if (angle < 90)
+        {
+            velocity = Vector3.zero;
+            moveDirection = Vector3.zero;
+        }
+        
+    }
+
     public void SetControl(bool hasControl)
     {
         this.hasControl = hasControl;
-        
+
         playerController.enabled = hasControl;
 
         if (hasControl == false)
@@ -171,7 +199,7 @@ public class PlayerMovement : MonoBehaviour
     //地面检测
     private void surfaceCheck()
     {
-        isGrounded = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset), 
+        isGrounded = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset),
             surfaceCheckRadius, surfaceLayer);
     }
 

@@ -42,7 +42,7 @@ public class EnvironmentCheck : MonoBehaviour
             rayColor = UnityEngine.Color.green;
         }
         //显示射线
-        Debug.DrawRay(rayOrigin, transform.forward * rayLength, rayColor);
+        //Debug.DrawRay(rayOrigin, transform.forward * rayLength, rayColor);
 
 
         //高度射线检测
@@ -55,7 +55,7 @@ public class EnvironmentCheck : MonoBehaviour
             //Debug.Log($"Height Ray - Origin: {heightRayOrigin}, Direction: Vector3.down, Hit Found: {hitData.heightHitFound}");
 
             //显示射线
-            Debug.DrawRay(heightRayOrigin, Vector3.down * heightRayLength, (hitData.heightHitFound) ? UnityEngine.Color.blue : UnityEngine.Color.green);
+            //Debug.DrawRay(heightRayOrigin, Vector3.down * heightRayLength, (hitData.heightHitFound) ? UnityEngine.Color.blue : UnityEngine.Color.green);
         }
 
         return hitData;
@@ -71,10 +71,10 @@ public class EnvironmentCheck : MonoBehaviour
         }
 
         float ledgeOriginOffet = 0.5f;
-        var ledgeOrigin = transform.position + moveDirection * ledgeOriginOffet;
+        var ledgeOrigin = transform.position + moveDirection * ledgeOriginOffet + Vector3.up;
 
         if(Physics.Raycast(ledgeOrigin, Vector3.down, out RaycastHit hitData, 
-            ledgeRayLength, surfaceLayer))
+            ledgeRayLength, obstacleLayer))
         {
             Debug.DrawRay(ledgeOrigin, Vector3.down * ledgeRayLength, UnityEngine.Color.yellow);
 

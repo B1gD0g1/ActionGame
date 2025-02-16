@@ -80,6 +80,10 @@ public class AnimatorManager : MonoBehaviour
         }
 
         //设置动画参数
+        if (true)
+        {
+            
+        }
         animator.SetFloat(horizontal, snappedHorizontal, 0.1f, Time.deltaTime);
         animator.SetFloat(vertical, snappedVertical, 0.1f, Time.deltaTime);
     }

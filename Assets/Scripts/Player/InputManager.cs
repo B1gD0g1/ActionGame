@@ -10,6 +10,7 @@ public class InputManager : MonoBehaviour
     private AnimatorManager animatorManager;
     private PlayerMovement playerMovement;
     private ParkourControllerScript parkourController;
+    private EnvironmentCheck environmentCheck;
 
     public float moveAmount;
 
@@ -35,6 +36,7 @@ public class InputManager : MonoBehaviour
         animatorManager = GetComponent<AnimatorManager>();
         playerMovement = GetComponent<PlayerMovement>();
         parkourController = GetComponent<ParkourControllerScript>();
+        environmentCheck = GetComponent<EnvironmentCheck>();
     }
 
     private void OnEnable()
@@ -49,10 +51,16 @@ public class InputManager : MonoBehaviour
             playerControls.PlayerActions.Sprint.performed += InputManager_OnSprintPerformed;
             playerControls.PlayerActions.Sprint.canceled += InputManager_OnSprintCanceled;
             playerControls.PlayerActions.Jump.performed += InputManager_OnJumpPerformed;
+            playerControls.PlayerActions.Jump.canceled += InputManager_OnJumpCanceled;
         }
 
         // 启用 PlayerControls，输入事件开始监听
         playerControls.Enable();
+    }
+
+    private void InputManager_OnJumpCanceled(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        jumpInput = false;
     }
 
     private void InputManager_OnJumpPerformed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -148,9 +156,11 @@ public class InputManager : MonoBehaviour
 
     private void HandleJumpInput()
     {
+        var hitData = environmentCheck.CheckObstacle();
+
         if (jumpInput && !playerMovement.isClimbing)
         {
-            parkourController.TryStartParkour();  // 尝试开始跑酷/攀爬动作
+            parkourController.TryStartParkour(hitData);  // 尝试开始跑酷/攀爬动作
             jumpInput = false;  // 重置跳跃输入
         }
 
@@ -164,5 +174,11 @@ public class InputManager : MonoBehaviour
     public void SetClimbingState(bool isClimbing)
     {
         playerMovement.isClimbing = isClimbing;
+    }
+
+    //暴露jumpInput
+    public bool GetJumpInput()
+    {
+        return jumpInput;
     }
 }
