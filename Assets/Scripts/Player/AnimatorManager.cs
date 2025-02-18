@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class AnimatorManager : MonoBehaviour
 {
-
     private Animator animator;
 
     private int horizontal;
@@ -80,12 +79,12 @@ public class AnimatorManager : MonoBehaviour
         }
 
         //设置动画参数
-        if (true)
-        {
-            
-        }
-        animator.SetFloat(horizontal, snappedHorizontal, 0.1f, Time.deltaTime);
-        animator.SetFloat(vertical, snappedVertical, 0.1f, Time.deltaTime);
+        //if (true)
+        //{
+
+        //}
+        animator.SetFloat(horizontal, snappedHorizontal, 0.2f, Time.deltaTime);
+        animator.SetFloat(vertical, snappedVertical, 0.2f, Time.deltaTime);
     }
 
     // 设置攀爬动画的状态
@@ -96,7 +95,12 @@ public class AnimatorManager : MonoBehaviour
 
     public void SetFloatAnimator(string id, float value)
     {
-        animator.SetFloat(id, value); 
+        animator.SetFloat(id, value);
+    }
+
+    public void SetFloatAnimator(string id, float value, float dampTime, float deltaTime)
+    {
+        animator.SetFloat(id, value, dampTime, deltaTime);
     }
 
     public void SetBoolAnimator(string name, bool value)

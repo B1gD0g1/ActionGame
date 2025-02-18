@@ -138,7 +138,16 @@ public class InputManager : MonoBehaviour
         //Mathf.Clamp01将结果限制在 [0, 1] 范围内
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontalInput) + Mathf.Abs(verticalInput));
 
-        animatorManager.UpdateAnimatorValues(0, moveAmount, playerMovement.isRunning);
+        //animatorManager.UpdateAnimatorValues(0f, moveAmount, playerMovement.isRunning);
+
+        if (playerMovement.IsOnLedge)
+        {
+            animatorManager.UpdateAnimatorValues(0f, 0f, playerMovement.isRunning);
+        }
+        else
+        {
+            animatorManager.UpdateAnimatorValues(0f, moveAmount, playerMovement.isRunning);
+        }
     }
 
     //判断冲刺状态
@@ -180,5 +189,10 @@ public class InputManager : MonoBehaviour
     public bool GetJumpInput()
     {
         return jumpInput;
+    }
+
+    public bool GetSprintInput()
+    {
+        return sprintInput;
     }
 }

@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private EnvironmentCheck environmentCheck;
 
     [Header("移动")]
+    [SerializeField] private Vector3 desiredMoveDirection;
     [SerializeField] private Vector3 moveDirection;
     [SerializeField] private Transform camObject;
     private CharacterController playerController;
@@ -23,14 +24,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float rotationSpeed = 12f;
 
     //记录最后一次有效的移动方向
-    private Vector3 lastMoveDirection;
+    //private Vector3 lastMoveDirection;
 
     [Header("状态")]
     public bool isMoving;
     public bool isRunning;
     public bool isGrounded;
     public bool isClimbing = false;
-    public bool isLedge;
 
     public bool IsOnLedge { get; set; }
     public LedgeInfo LedgeInfo { get; set; }
@@ -42,7 +42,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float surfaceCheckRadius = 0.3f;
     [SerializeField] private Vector3 surfaceCheckOffset;
     [SerializeField] private LayerMask surfaceLayer;
-    //private bool onSurface;
+
+    [Header("重力缓冲")]
+    [SerializeField] private bool isGroundedBuffer = false;
+    [SerializeField] private float groundedBufferTime; // 缓冲时间
+    [SerializeField] private float groundedBufferTimer = 0f;  // 当前缓冲计时器
 
 
     private Quaternion targetRotation;
@@ -57,32 +61,33 @@ public class PlayerMovement : MonoBehaviour
 
     public void HandleAllMovement()
     {
-        HandleMovement();
-        HandleRotation();
-
         if (hasControl == false)
             return;
-        
+
+        HandleMovement();
+        HandleRotation();
     }
 
     private void HandleMovement()
     {
         // 计算基于摄像机方向的移动向量
-        moveDirection = camObject.forward * inputManager.verticalInput;
-        moveDirection = moveDirection + camObject.right * inputManager.horizontalInput;
-        moveDirection.Normalize();
-        moveDirection.y = 0;// 不沿着垂直方向移动
+        desiredMoveDirection = camObject.forward * inputManager.verticalInput;
+        desiredMoveDirection += camObject.right * inputManager.horizontalInput;
+        desiredMoveDirection.Normalize();
+        desiredMoveDirection.y = 0;// 不沿着垂直方向移动
+
+        moveDirection = desiredMoveDirection;
 
         //移动逻辑
         if (isRunning)
         {
-            moveDirection *= runningSpeed;
+            desiredMoveDirection *= runningSpeed;
         }
         else
         {
             if (inputManager.moveAmount > 0.5f)
             {
-                moveDirection *= walkingSpeed;
+                desiredMoveDirection *= walkingSpeed;
                 isMoving = true;
             }
             else
@@ -91,22 +96,11 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        //moveDirection = requiredMoveDirection;
-
-        //当有输入时，更新 lastMoveDirection
-        if (moveDirection.magnitude > 0)
-        {
-            lastMoveDirection = moveDirection;
-        }
-
-        velocity = Vector3.zero;
-
         surfaceCheck();
         animatorManager.SetBoolAnimator("isGrounded", isGrounded);
-        //Debug.Log("isGround = " + isGrounded);
         ApplyGravity();
 
-        velocity = new Vector3(moveDirection.x, ySpeed, moveDirection.z); // 更新水平速度 保持垂直速度
+        //velocity = new Vector3(moveDirection.x, ySpeed, moveDirection.z); // 更新水平速度 保持垂直速度
 
         // 使用 CharacterController 的 Move 函数来移动角色
         playerController.Move(velocity * Time.deltaTime);
@@ -114,28 +108,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleRotation()
     {
-        //Vector3 targetDirection = Vector3.zero;
+        if (inputManager.moveAmount > 0 && moveDirection.magnitude > 0.2f)
+        {
+            //targetDirection = moveDirection;
+            targetRotation = Quaternion.LookRotation(moveDirection);
+        }
 
-        //targetDirection = camObject.forward * inputManager.verticalInput;
-        //targetDirection = targetDirection + camObject.right * inputManager.horizontalInput;
-        //targetDirection.Normalize();
-        //targetDirection.y = 0;
-
-        // 如果有输入，旋转到当前移动方向；否则保持最后的移动方向
-        Vector3 targetDirection = moveDirection.magnitude > 0 ? moveDirection : lastMoveDirection;
-
-        // 没有有效方向时，不更新旋转
-        if (targetDirection.magnitude == 0)
-            return;
-
-        //if (requiredMoveDirection.magnitude > 0.2f)
-        //{
-
-        //}
-
-        targetRotation = Quaternion.LookRotation(targetDirection);
-
-        Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation, 
+        Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation,
             rotationSpeed * Time.deltaTime);
 
         transform.rotation = playerRotation;
@@ -155,7 +134,10 @@ public class PlayerMovement : MonoBehaviour
             // 如果在地面上，重置垂直速度，防止角色被卡住
             ySpeed = -0.5f;
 
-            IsOnLedge = environmentCheck.CheckLedge(moveDirection, out LedgeInfo ledgeInfo);
+            //更新水平速度 保持垂直速度
+            velocity = new Vector3(desiredMoveDirection.x, ySpeed, desiredMoveDirection.z);
+
+            IsOnLedge = environmentCheck.CheckLedge(desiredMoveDirection, out LedgeInfo ledgeInfo);
 
             if (IsOnLedge)
             {
@@ -172,14 +154,32 @@ public class PlayerMovement : MonoBehaviour
     //障碍物上的移动输入
     private void LedgeMovement()
     {
-        float angle = Vector3.Angle(LedgeInfo.surfaceHit.normal, moveDirection);
+        float signedAngle = Vector3.SignedAngle(LedgeInfo.surfaceHit.normal,
+            desiredMoveDirection, Vector3.up);
+        var angle = Mathf.Abs(signedAngle);
 
-        if (angle < 90)
+        if (Vector3.Angle(desiredMoveDirection, transform.forward) >= 70)
+        {
+            //不能移动，可以旋转
+            velocity = Vector3.zero;
+            return;
+        }
+
+        if (angle < 60)
         {
             velocity = Vector3.zero;
             moveDirection = Vector3.zero;
         }
-        
+        else if (angle < 90)
+        {
+            //角度小于90°大于60° 把速度限制在水平方向上
+            var left = Vector3.Cross(Vector3.up, LedgeInfo.surfaceHit.normal);
+            var dir = left * Mathf.Sign(signedAngle);
+
+            velocity = velocity.magnitude * dir;
+            moveDirection = dir;
+        }
+
     }
 
     public void SetControl(bool hasControl)
@@ -201,12 +201,52 @@ public class PlayerMovement : MonoBehaviour
     {
         isGrounded = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset),
             surfaceCheckRadius, surfaceLayer);
+
+        if (isGrounded)
+        {
+            // 如果角色处于地面上，检查地面法线的角度
+            RaycastHit groundHit;
+            if (Physics.Raycast(transform.position, Vector3.down,
+                out groundHit, surfaceCheckRadius, surfaceLayer))
+            {
+                float groundAngle = Vector3.Angle(groundHit.normal, Vector3.up);
+
+                // 如果地面法线与垂直方向的角度小于一定阈值（例如 45°），认为是有效地面
+                if (groundAngle < 45f)
+                {
+                    // 正常检测为地面
+                    isGrounded = true;
+                }
+                else
+                {
+                    // 如果角度太大，认为不在有效的地面上
+                    isGrounded = false;
+                }
+            }
+        }
+        //if (isGrounded)
+        //{
+        //    groundedBufferTimer = 0f;
+        //}
+        //else
+        //{
+        //    groundedBufferTimer += Time.deltaTime;
+        //    if (groundedBufferTimer < groundedBufferTime)
+        //    {
+        //        isGrounded = true; // 在缓冲时间内仍然认为角色在地面上
+        //    }
+        //}
     }
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawSphere(transform.TransformPoint(surfaceCheckOffset), surfaceCheckRadius);
+    }
+
+    public Vector3 GetVelocity()
+    {
+        return velocity;
     }
 
     public float RotationSpeed => rotationSpeed;

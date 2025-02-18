@@ -80,7 +80,7 @@ public class EnvironmentCheck : MonoBehaviour
 
             var surfaceRaycastOrigin = transform.position + moveDirection - new Vector3(0, 0.1f, 0);
             if (Physics.Raycast(surfaceRaycastOrigin, -moveDirection, 
-                out RaycastHit surfaceHit, 2, obstacleLayer))
+                out RaycastHit surfaceHit, 1.5f, obstacleLayer))
             {
                 float ledgeHeight = transform.position.y - hitData.point.y;
 
