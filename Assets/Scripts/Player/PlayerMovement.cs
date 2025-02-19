@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     private InputManager inputManager;
     private AnimatorManager animatorManager;
     private EnvironmentCheck environmentCheck;
+    private CharacterController characterController;
 
     [Header("移动")]
     [SerializeField] private Vector3 desiredMoveDirection;
@@ -22,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float walkingSpeed = 2f;
     [SerializeField] private float runningSpeed = 6f;
     [SerializeField] private float rotationSpeed = 12f;
+    [SerializeField] private float fallingSpeed;
 
     //记录最后一次有效的移动方向
     //private Vector3 lastMoveDirection;
@@ -31,6 +33,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isRunning;
     public bool isGrounded;
     public bool isClimbing = false;
+    public bool isSlope;
+
 
     public bool IsOnLedge { get; set; }
     public LedgeInfo LedgeInfo { get; set; }
@@ -42,6 +46,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float surfaceCheckRadius = 0.3f;
     [SerializeField] private Vector3 surfaceCheckOffset;
     [SerializeField] private LayerMask surfaceLayer;
+
+    [Header("斜坡检测")]
+    [SerializeField] private float slopeForceRayLength;
 
     [Header("重力缓冲")]
     [SerializeField] private bool isGroundedBuffer = false;
@@ -57,6 +64,7 @@ public class PlayerMovement : MonoBehaviour
         playerController = GetComponent<CharacterController>();
         animatorManager = GetComponent<AnimatorManager>();
         environmentCheck = GetComponent<EnvironmentCheck>();
+        characterController = GetComponent<CharacterController>();
     }
 
     public void HandleAllMovement()
@@ -132,7 +140,14 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             // 如果在地面上，重置垂直速度，防止角色被卡住
-            ySpeed = -0.5f;
+            if (isSlope == true)
+            {
+                ySpeed = Physics.gravity.y * fallingSpeed * Time.deltaTime;
+            }
+            else
+            {
+                ySpeed = -0.5f;
+            }
 
             //更新水平速度 保持垂直速度
             velocity = new Vector3(desiredMoveDirection.x, ySpeed, desiredMoveDirection.z);
@@ -202,40 +217,61 @@ public class PlayerMovement : MonoBehaviour
         isGrounded = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset),
             surfaceCheckRadius, surfaceLayer);
 
-        if (isGrounded)
-        {
-            // 如果角色处于地面上，检查地面法线的角度
-            RaycastHit groundHit;
-            if (Physics.Raycast(transform.position, Vector3.down,
-                out groundHit, surfaceCheckRadius, surfaceLayer))
-            {
-                float groundAngle = Vector3.Angle(groundHit.normal, Vector3.up);
+        SlopCheck();
 
-                // 如果地面法线与垂直方向的角度小于一定阈值（例如 45°），认为是有效地面
-                if (groundAngle < 45f)
-                {
-                    // 正常检测为地面
-                    isGrounded = true;
-                }
-                else
-                {
-                    // 如果角度太大，认为不在有效的地面上
-                    isGrounded = false;
-                }
-            }
-        }
         //if (isGrounded)
         //{
+        //    isGroundedBuffer = false;
         //    groundedBufferTimer = 0f;
         //}
         //else
         //{
+        //    isGroundedBuffer = true;
         //    groundedBufferTimer += Time.deltaTime;
         //    if (groundedBufferTimer < groundedBufferTime)
         //    {
         //        isGrounded = true; // 在缓冲时间内仍然认为角色在地面上
         //    }
         //}
+    }
+
+    //斜坡检测
+    private void SlopCheck()
+    {
+        if (isGrounded)
+        {
+            RaycastHit groundHit;
+            if (Physics.Raycast(transform.position + new Vector3(0, 0.1f, 0),
+                Vector3.down, out groundHit,
+                slopeForceRayLength, surfaceLayer))
+            {
+
+                float groundAngle = Vector3.Angle(groundHit.normal, Vector3.up);
+
+                if (groundAngle > 0 && groundAngle < 80)
+                {
+                    isSlope = true;
+                }
+                else
+                {
+                    isSlope = false;
+                }
+            }
+            else
+            {
+                isSlope = false;
+            }
+
+            Debug.DrawLine(transform.position + new Vector3(0, 0.2f, 0),
+                transform.position + Vector3.up + Vector3.down * slopeForceRayLength,
+                isSlope ? Color.blue : Color.cyan);
+        }
+    }
+
+    public bool HasControl
+    {
+        get => hasControl;
+        set => hasControl = value;
     }
 
     private void OnDrawGizmosSelected()
