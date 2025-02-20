@@ -10,12 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6a3081857a42de744a14bdc74cae622b, type: 3}
-  m_Name: JumpDown
+  m_Name: JumpDown1
   m_EditorClassIdentifier: 
-  animationName: JumpDown
+  animationName: JumpDown1
   obstacleTag: 
   minimumHeight: 0
   maximumHeight: 0
+  minimumDropHeight: 0
+  maxmumDropHeight: 0
   rotateToObstacle: 0
   postActionDelay: 0
   enableTargetMatching: 1

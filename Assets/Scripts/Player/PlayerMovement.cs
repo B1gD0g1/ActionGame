@@ -32,7 +32,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isMoving;
     public bool isRunning;
     public bool isGrounded;
-    public bool isClimbing = false;
+    public bool isOnObstacle;
+    public bool isJumping = false;
     public bool isSlope;
 
 
@@ -45,7 +46,10 @@ public class PlayerMovement : MonoBehaviour
     [Header("检测地面")]
     [SerializeField] private float surfaceCheckRadius = 0.3f;
     [SerializeField] private Vector3 surfaceCheckOffset;
+    [SerializeField] private LayerMask surfaceAndObstacleLayer;
+    [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private LayerMask surfaceLayer;
+
 
     [Header("斜坡检测")]
     [SerializeField] private float slopeForceRayLength;
@@ -105,7 +109,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         surfaceCheck();
-        animatorManager.SetBoolAnimator("isGrounded", isGrounded);
+        animatorManager.SetBoolAnimator("isGrounded", (isOnObstacle || isGrounded));
         ApplyGravity();
 
         //velocity = new Vector3(moveDirection.x, ySpeed, moveDirection.z); // 更新水平速度 保持垂直速度
@@ -131,7 +135,7 @@ public class PlayerMovement : MonoBehaviour
     private void ApplyGravity()
     {
         // 只有在角色不在地面时才应用重力
-        if (isGrounded == false)
+        if (isGrounded == false && isOnObstacle == false)
         {
             ySpeed += Physics.gravity.y * Time.deltaTime;
 
@@ -152,13 +156,16 @@ public class PlayerMovement : MonoBehaviour
             //更新水平速度 保持垂直速度
             velocity = new Vector3(desiredMoveDirection.x, ySpeed, desiredMoveDirection.z);
 
-            IsOnLedge = environmentCheck.CheckLedge(desiredMoveDirection, out LedgeInfo ledgeInfo);
-
-            if (IsOnLedge)
+            if (isOnObstacle && isRunning == false)
             {
-                LedgeInfo = ledgeInfo;
-                LedgeMovement();
-                //Debug.Log("Player is on ledge");
+                IsOnLedge = environmentCheck.CheckLedge(desiredMoveDirection, out LedgeInfo ledgeInfo);
+
+                if (IsOnLedge)
+                {
+                    LedgeInfo = ledgeInfo;
+                    LedgeMovement();
+                    //Debug.Log("Player is on ledge");
+                }
             }
         }
 
@@ -217,6 +224,9 @@ public class PlayerMovement : MonoBehaviour
         isGrounded = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset),
             surfaceCheckRadius, surfaceLayer);
 
+        isOnObstacle = Physics.CheckSphere(transform.TransformPoint(surfaceCheckOffset),
+            surfaceCheckRadius, obstacleLayer);
+
         SlopCheck();
 
         //if (isGrounded)
@@ -243,7 +253,7 @@ public class PlayerMovement : MonoBehaviour
             RaycastHit groundHit;
             if (Physics.Raycast(transform.position + new Vector3(0, 0.1f, 0),
                 Vector3.down, out groundHit,
-                slopeForceRayLength, surfaceLayer))
+                slopeForceRayLength, surfaceAndObstacleLayer))
             {
 
                 float groundAngle = Vector3.Angle(groundHit.normal, Vector3.up);

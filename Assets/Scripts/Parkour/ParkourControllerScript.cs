@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ParkourControllerScript : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class ParkourControllerScript : MonoBehaviour
     private EnvironmentCheck environmentCheck;
     private PlayerMovement playerMovement;
     private InputManager inputManager;
+    private PlayerControls playerControls;
 
     public Animator animator;
 
@@ -21,11 +23,17 @@ public class ParkourControllerScript : MonoBehaviour
     [Header("跳下动作")]
     [SerializeField] private NewParkourAction jumpDownParkourAction;
 
+    [Header("自动跳下高度")]
+    [SerializeField] private float autoDropHeightLimit;
+
     private void Awake()
     {
         environmentCheck = GetComponent<EnvironmentCheck>();
         playerMovement = GetComponent<PlayerMovement>();
         inputManager = GetComponent<InputManager>();
+
+        playerControls = new PlayerControls();
+        playerControls.Enable();
     }
 
     private void Update()
@@ -53,15 +61,38 @@ public class ParkourControllerScript : MonoBehaviour
             }
         }
 
-        if (playerMovement.IsOnLedge && playerInAction == false 
-            && hitData.hitFound == false && inputManager.GetJumpInput() == true)
-        {
-            if (playerMovement.LedgeInfo.angle <= 50)
+        //if (playerMovement.IsOnLedge && playerInAction == false
+        //    && hitData.hitFound == false)
+        //{
+        //    bool shouldJump = true;
+        //    if (playerMovement.LedgeInfo.height > autoDropHeightLimit
+        //        && playerControls.PlayerActions.Jump.triggered == false)
+        //    {
+        //        shouldJump = false;
+        //    }
+
+        //    if (shouldJump && playerMovement.LedgeInfo.angle <= 50)
+        //    {
+        //        playerMovement.IsOnLedge = false;
+        //        StartCoroutine(PerformParkourAction(jumpDownParkourAction));
+        //    }
+        //}
+    }
+
+    public void TryStartJumpDown(ObstacleInfo hitData)
+    {
+            bool shouldJump = true;
+            if (playerMovement.LedgeInfo.height > autoDropHeightLimit
+                && playerControls.PlayerActions.Jump.triggered == false)
+            {
+                shouldJump = false;
+            }
+
+            if (shouldJump && playerMovement.LedgeInfo.angle <= 50)
             {
                 playerMovement.IsOnLedge = false;
                 StartCoroutine(PerformParkourAction(jumpDownParkourAction));
             }
-        }
     }
 
     private IEnumerator PerformParkourAction(NewParkourAction action)
@@ -133,5 +164,10 @@ public class ParkourControllerScript : MonoBehaviour
             new MatchTargetWeightMask(action.MatchPositionWeight, 0), 
             action.MatchStartTime, 
             action.MatchTargetTime);
+    }
+
+    public bool GetPlayerInAction()
+    {
+        return playerInAction;
     }
 }

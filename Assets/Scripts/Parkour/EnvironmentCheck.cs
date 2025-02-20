@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using UnityEngine;
 
 public class EnvironmentCheck : MonoBehaviour
@@ -73,22 +74,31 @@ public class EnvironmentCheck : MonoBehaviour
         float ledgeOriginOffet = 0.5f;
         var ledgeOrigin = transform.position + moveDirection * ledgeOriginOffet + Vector3.up;
 
-        if(Physics.Raycast(ledgeOrigin, Vector3.down, out RaycastHit hitData, 
-            ledgeRayLength, obstacleLayer))
+        if (PhysicsUtillity.ThreeRaycasts(ledgeOrigin, Vector3.down, 0.25f, transform,
+            out List<RaycastHit> hitDatas, ledgeRayLength, obstacleLayer, true))
         {
-            Debug.DrawRay(ledgeOrigin, Vector3.down * ledgeRayLength, UnityEngine.Color.yellow);
+            //Debug.DrawRay(ledgeOrigin, Vector3.down * ledgeRayLength, UnityEngine.Color.yellow);
 
-            var surfaceRaycastOrigin = transform.position + moveDirection - new Vector3(0, 0.1f, 0);
-            if (Physics.Raycast(surfaceRaycastOrigin, -moveDirection, 
-                out RaycastHit surfaceHit, 1.5f, obstacleLayer))
+            var validHits = hitDatas.Where(h =>
+            transform.position.y - h.point.y > ledgeRayHeightThresHold).ToList();
+
+            if (validHits.Count > 0)
             {
-                float ledgeHeight = transform.position.y - hitData.point.y;
+                //var surfaceRaycastOrigin = transform.position + moveDirection - new Vector3(0, 0.1f, 0);
+                var surfaceRaycastOrigin = validHits[0].point;
+                surfaceRaycastOrigin.y = transform.position.y - 0.1f;
 
-                if (ledgeHeight > ledgeRayHeightThresHold)
+                if (Physics.Raycast(surfaceRaycastOrigin, transform.position - surfaceRaycastOrigin,
+                    out RaycastHit surfaceHit, 2f, obstacleLayer))
                 {
+                    Debug.DrawLine(surfaceRaycastOrigin, transform.position, UnityEngine.Color.cyan);
+
+                    float ledgeHeight = transform.position.y - validHits[0].point.y;
+
                     ledgeInfo.angle = Vector3.Angle(transform.forward, surfaceHit.normal);
                     ledgeInfo.height = ledgeHeight;
                     ledgeInfo.surfaceHit = surfaceHit;
+
                     return true;
                 }
             }

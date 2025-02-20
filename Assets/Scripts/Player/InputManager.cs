@@ -105,7 +105,7 @@ public class InputManager : MonoBehaviour
 
     private void HandleMovementInput()
     {
-        if (playerMovement.isClimbing)
+        if (playerMovement.isJumping)
         {
             // 只允许垂直输入（水平输入为 0）
             verticalInput = movementInput.y;
@@ -142,7 +142,7 @@ public class InputManager : MonoBehaviour
 
         if (playerMovement.IsOnLedge)
         {
-            animatorManager.UpdateAnimatorValues(0f, 0f, playerMovement.isRunning);
+            animatorManager.UpdateAnimatorValues(0f, 0f, false);
         }
         else
         {
@@ -153,7 +153,9 @@ public class InputManager : MonoBehaviour
     //判断冲刺状态
     private void HandleSprintInput()
     {
-        if (sprintInput && moveAmount > 0.5f && playerMovement.isGrounded == true)
+        if (sprintInput && moveAmount > 0.5f 
+            && (playerMovement.isGrounded == true || playerMovement.isOnObstacle == true) 
+            && playerMovement.IsOnLedge == false)
         {
             playerMovement.isRunning = true;
         }
@@ -167,9 +169,16 @@ public class InputManager : MonoBehaviour
     {
         var hitData = environmentCheck.CheckObstacle();
 
-        if (jumpInput && !playerMovement.isClimbing)
+        if (jumpInput && !playerMovement.isJumping)
         {
             parkourController.TryStartParkour(hitData);  // 尝试开始跑酷/攀爬动作
+            jumpInput = false;  // 重置跳跃输入
+        }
+
+        if (playerMovement.IsOnLedge && parkourController.GetPlayerInAction() == false
+            && hitData.hitFound == false)
+        {
+            parkourController.TryStartJumpDown(hitData);  // 尝试开始跑酷/攀爬动作
             jumpInput = false;  // 重置跳跃输入
         }
 
@@ -182,7 +191,7 @@ public class InputManager : MonoBehaviour
     // 设置攀爬状态
     public void SetClimbingState(bool isClimbing)
     {
-        playerMovement.isClimbing = isClimbing;
+        playerMovement.isJumping = isClimbing;
     }
 
     //暴露jumpInput

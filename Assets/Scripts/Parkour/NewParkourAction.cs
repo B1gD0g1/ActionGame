@@ -10,6 +10,8 @@ public class NewParkourAction : ScriptableObject
     [SerializeField] private string obstacleTag;
     [SerializeField] private float minimumHeight;
     [SerializeField] private float maximumHeight;
+    [SerializeField] private float minimumDropHeight;
+    [SerializeField] private float maxmumDropHeight;
 
 
     [SerializeField] private bool rotateToObstacle;
@@ -39,7 +41,6 @@ public class NewParkourAction : ScriptableObject
             return false;
         }
 
-
         //¸ß¶È height
         float checkHeight = hitData.heightHitInfo.point.y - player.position.y;
 
@@ -62,6 +63,7 @@ public class NewParkourAction : ScriptableObject
             return true;
         }
     }
+
 
     public string AnimationName => animationName;
     public bool RotateToObstacle => rotateToObstacle;
