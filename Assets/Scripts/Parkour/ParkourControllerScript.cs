@@ -14,9 +14,6 @@ public class ParkourControllerScript : MonoBehaviour
     public Animator animator;
 
 
-    private bool playerInAction;
-
-
     [Header("跑酷动作区域")]
     [SerializeField] private List<NewParkourAction> parkourActions;
 
@@ -38,12 +35,12 @@ public class ParkourControllerScript : MonoBehaviour
 
     private void Update()
     {
-      
-    } 
+
+    }
 
     public void TryStartParkour(ObstacleInfo hitData)
     {
-        if (playerInAction) return;
+        if (playerMovement.InAction) return;
 
         //var hitData = environmentCheck.CheckObstacle();
 
@@ -60,95 +57,46 @@ public class ParkourControllerScript : MonoBehaviour
                 }
             }
         }
-
-        //if (playerMovement.IsOnLedge && playerInAction == false
-        //    && hitData.hitFound == false)
-        //{
-        //    bool shouldJump = true;
-        //    if (playerMovement.LedgeInfo.height > autoDropHeightLimit
-        //        && playerControls.PlayerActions.Jump.triggered == false)
-        //    {
-        //        shouldJump = false;
-        //    }
-
-        //    if (shouldJump && playerMovement.LedgeInfo.angle <= 50)
-        //    {
-        //        playerMovement.IsOnLedge = false;
-        //        StartCoroutine(PerformParkourAction(jumpDownParkourAction));
-        //    }
-        //}
     }
 
     public void TryStartJumpDown(ObstacleInfo hitData)
     {
-            bool shouldJump = true;
-            if (playerMovement.LedgeInfo.height > autoDropHeightLimit
-                && playerControls.PlayerActions.Jump.triggered == false)
-            {
-                shouldJump = false;
-            }
+        bool shouldJump = true;
+        if (playerMovement.LedgeInfo.height > autoDropHeightLimit
+            && playerControls.PlayerActions.Jump.triggered == false)
+        {
+            shouldJump = false;
+        }
 
-            if (shouldJump && playerMovement.LedgeInfo.angle <= 50)
-            {
-                playerMovement.IsOnLedge = false;
-                StartCoroutine(PerformParkourAction(jumpDownParkourAction));
-            }
+        if (shouldJump && playerMovement.LedgeInfo.angle <= 50)
+        {
+            playerMovement.IsOnLedge = false;
+            StartCoroutine(PerformParkourAction(jumpDownParkourAction));
+        }
     }
 
     private IEnumerator PerformParkourAction(NewParkourAction action)
     {
-        playerInAction = true;
-
         playerMovement.SetControl(false);
 
-        // 执行攀爬动画
-        animator.CrossFade(action.AnimationName, 0.2f);
-        yield return null;
-
-        // 通知输入管理器开始攀爬
-        inputManager.SetClimbingState(true);
-
-        var animatorState = animator.GetNextAnimatorStateInfo(0);
-        if (animatorState.IsName(action.AnimationName) == false)
+        MatchTargetParams matchTargetParams = null;
+        if (action.EnableTargetMatching)
         {
-            Debug.LogError("动作名称不匹配！");
+            matchTargetParams = new MatchTargetParams()
+            {
+                matchPosition = action.MatchPosition,
+                matchBodyPart = action.MatchBodyPart,
+                matchPositionWeight = action.MatchPositionWeight,
+                matchStartTime = action.MatchStartTime,
+                matchTargetTime = action.MatchTargetTime,
+            };
         }
 
-        //yield return new WaitForSeconds(animatorState.length);
-
-        float timer = 0f;
-        while (timer <= animatorState.length)
-        {
-            timer += Time.deltaTime;
-
-            if (action.RotateToObstacle)
-            {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, 
-                    action.TargetRotation,
-                    playerMovement.RotationSpeed * Time.deltaTime);
-            }
-
-            if (action.EnableTargetMatching)
-            {
-                MatchTarget(action);
-            }
-
-            if (animator.IsInTransition(0) && timer > 0.5f)
-            {
-                break;
-            }
-
-            yield return null;
-        }
-
-        yield return new WaitForSeconds(action.PostActionDelay);
-
-        // 完成攀爬后，恢复正常输入模式
-        inputManager.SetClimbingState(false);
+        yield return playerMovement.DoAction(action.AnimationName, matchTargetParams,
+            action.TargetRotation, action.RotateToObstacle, action.PostActionDelay);
 
         playerMovement.SetControl(true);
 
-        playerInAction = false;
     }
 
     private void MatchTarget(NewParkourAction action)
@@ -158,16 +106,16 @@ public class ParkourControllerScript : MonoBehaviour
             return;
         }
 
-        animator.MatchTarget(action.MatchPosition, 
-            transform.rotation, 
+        animator.MatchTarget(action.MatchPosition,
+            transform.rotation,
             action.MatchBodyPart,
-            new MatchTargetWeightMask(action.MatchPositionWeight, 0), 
-            action.MatchStartTime, 
+            new MatchTargetWeightMask(action.MatchPositionWeight, 0),
+            action.MatchStartTime,
             action.MatchTargetTime);
     }
 
     public bool GetPlayerInAction()
     {
-        return playerInAction;
+        return playerMovement.InAction;
     }
 }

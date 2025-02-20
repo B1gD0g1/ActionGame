@@ -5,10 +5,10 @@ using UnityEngine;
 public class ColliderTest : MonoBehaviour
 {
 
-    private void Start()
-    {
-        Vector3 length = GetComponent<Collider>().bounds.size;
-        Debug.Log(gameObject.name + length);
-    }
+    //private void Start()
+    //{
+    //    Vector3 length = GetComponent<Collider>().bounds.size;
+    //    Debug.Log(gameObject.name + length);
+    //}
 
 }

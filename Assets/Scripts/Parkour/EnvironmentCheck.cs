@@ -19,11 +19,15 @@ public class EnvironmentCheck : MonoBehaviour
     [SerializeField] private float ledgeRayLength = 11f;
     [SerializeField] private float ledgeRayHeightThresHold = 0.76f;
 
+    [Header("≈ ≈¿ºÏ≤‚")]
+    [SerializeField] private float climbLedgeRayLength = 1.5f;
+    [SerializeField] private LayerMask climbLedgeLayer;
+    [SerializeField] private int numberOfRays = 15;
+
 
 
     public ObstacleInfo CheckObstacle()
     {
-
         var hitData = new ObstacleInfo();
 
         //«∞∑Ω…‰œﬂ∆µ„
@@ -62,6 +66,7 @@ public class EnvironmentCheck : MonoBehaviour
         return hitData;
     }
 
+    //ºÏ≤‚’œ∞≠ŒÔ±ﬂ‘µ
     public bool CheckLedge(Vector3 moveDirection, out LedgeInfo ledgeInfo)
     {
         ledgeInfo = new LedgeInfo();
@@ -105,7 +110,36 @@ public class EnvironmentCheck : MonoBehaviour
         }
         return false;
     }
+
+    public bool ClimbeLedgeCheck(Vector3 climbDirection, out RaycastHit climbHitInfo)
+    {
+        climbHitInfo = new RaycastHit();
+
+        if (climbDirection == Vector3.zero)
+        {
+            return false;
+        }
+
+        var climbRayOrigin = transform.position + Vector3.up * 2f;
+        var climbRayOffet = new Vector3(0, 0.19f, 0);
+
+        for (int i = 0; i < numberOfRays; i++)
+        {
+            Debug.DrawRay(climbRayOrigin + climbRayOffet * i, climbDirection);
+
+            if (Physics.Raycast(climbRayOrigin + climbRayOffet * i, climbDirection,
+                out RaycastHit hitInfo, ledgeRayLength, climbLedgeLayer))
+            {
+                climbHitInfo = hitInfo;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
+
 
 public struct ObstacleInfo
 {

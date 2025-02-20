@@ -9,6 +9,8 @@ public class PlayerMovement : MonoBehaviour
     private AnimatorManager animatorManager;
     private EnvironmentCheck environmentCheck;
     private CharacterController characterController;
+    private Animator animator;
+
 
     [Header("移动")]
     [SerializeField] private Vector3 desiredMoveDirection;
@@ -36,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isJumping = false;
     public bool isSlope;
 
+    public bool InAction { get; private set; }
 
     public bool IsOnLedge { get; set; }
     public LedgeInfo LedgeInfo { get; set; }
@@ -69,6 +72,7 @@ public class PlayerMovement : MonoBehaviour
         animatorManager = GetComponent<AnimatorManager>();
         environmentCheck = GetComponent<EnvironmentCheck>();
         characterController = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
     }
 
     public void HandleAllMovement()
@@ -204,6 +208,72 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+    public IEnumerator DoAction(string animationName, MatchTargetParams matchTargetParams,
+        Quaternion targetRotation, bool rotate = false, float postActionDelay = 0)
+    {
+        InAction = true;
+
+        // 执行攀爬动画
+        animator.CrossFade(animationName, 0.2f);
+        yield return null;
+
+        // 通知输入管理器开始攀爬
+        inputManager.SetJumpingState(true);
+
+        var animatorState = animator.GetNextAnimatorStateInfo(0);
+        if (animatorState.IsName(animationName) == false)
+        {
+            Debug.LogError("动作名称不匹配！");
+        }
+
+        float timer = 0f;
+        while (timer <= animatorState.length)
+        {
+            timer += Time.deltaTime;
+
+            if (rotate)
+            {
+                transform.rotation = Quaternion.RotateTowards(transform.rotation,
+                    targetRotation,
+                    RotationSpeed * Time.deltaTime);
+            }
+
+            if (matchTargetParams != null)
+            {
+                MatchTarget(matchTargetParams);
+            }
+
+            if (animator.IsInTransition(0) && timer > 0.5f)
+            {
+                break;
+            }
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(postActionDelay);
+
+        // 完成攀爬后，恢复正常输入模式
+        inputManager.SetJumpingState(false);
+
+        InAction = false;
+    }
+
+    private void MatchTarget(MatchTargetParams mp)
+    {
+        if (animator.isMatchingTarget)
+        {
+            return;
+        }
+
+        animator.MatchTarget(mp.matchPosition,
+            transform.rotation,
+            mp.matchBodyPart,
+            new MatchTargetWeightMask(mp.matchPositionWeight, 0),
+            mp.matchStartTime,
+            mp.matchTargetTime);
+    }
+
     public void SetControl(bool hasControl)
     {
         this.hasControl = hasControl;
@@ -228,21 +298,6 @@ public class PlayerMovement : MonoBehaviour
             surfaceCheckRadius, obstacleLayer);
 
         SlopCheck();
-
-        //if (isGrounded)
-        //{
-        //    isGroundedBuffer = false;
-        //    groundedBufferTimer = 0f;
-        //}
-        //else
-        //{
-        //    isGroundedBuffer = true;
-        //    groundedBufferTimer += Time.deltaTime;
-        //    if (groundedBufferTimer < groundedBufferTime)
-        //    {
-        //        isGrounded = true; // 在缓冲时间内仍然认为角色在地面上
-        //    }
-        //}
     }
 
     //斜坡检测
@@ -296,4 +351,14 @@ public class PlayerMovement : MonoBehaviour
     }
 
     public float RotationSpeed => rotationSpeed;
+}
+
+
+public class MatchTargetParams
+{
+    public Vector3 matchPosition;
+    public AvatarTarget matchBodyPart;
+    public Vector3 matchPositionWeight;
+    public float matchStartTime;
+    public float matchTargetTime;
 }

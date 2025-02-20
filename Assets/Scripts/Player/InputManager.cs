@@ -30,7 +30,6 @@ public class InputManager : MonoBehaviour
     [SerializeField] private bool jumpInput;  //控制跳跃输入
 
 
-
     private void Awake()
     {
         animatorManager = GetComponent<AnimatorManager>();
@@ -66,6 +65,7 @@ public class InputManager : MonoBehaviour
     private void InputManager_OnJumpPerformed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
     {
         jumpInput = true;
+
     }
 
     private void InputManager_OnCameraMovementPerformed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -101,6 +101,7 @@ public class InputManager : MonoBehaviour
         HandleMovementInput();
         HandleSprintInput();
         HandleJumpInput();  // 处理跳跃输入
+        HandleClimbInput();
     }
 
     private void HandleMovementInput()
@@ -172,14 +173,12 @@ public class InputManager : MonoBehaviour
         if (jumpInput && !playerMovement.isJumping)
         {
             parkourController.TryStartParkour(hitData);  // 尝试开始跑酷/攀爬动作
-            jumpInput = false;  // 重置跳跃输入
         }
 
-        if (playerMovement.IsOnLedge && parkourController.GetPlayerInAction() == false
+        if (playerMovement.IsOnLedge && playerMovement.InAction == false
             && hitData.hitFound == false)
         {
             parkourController.TryStartJumpDown(hitData);  // 尝试开始跑酷/攀爬动作
-            jumpInput = false;  // 重置跳跃输入
         }
 
         //if (playerMovement.playerOnLedge)
@@ -188,10 +187,21 @@ public class InputManager : MonoBehaviour
         //}
     }
 
-    // 设置攀爬状态
-    public void SetClimbingState(bool isClimbing)
+    private void HandleClimbInput()
     {
-        playerMovement.isJumping = isClimbing;
+        if (jumpInput)
+        {
+            if (environmentCheck.ClimbeLedgeCheck(transform.forward, out RaycastHit climbHitInfo))
+            {
+                Debug.Log("攀爬点已找到");
+            }
+        }
+    }
+
+    // 设置攀爬状态
+    public void SetJumpingState(bool isJumping)
+    {
+        playerMovement.isJumping = isJumping;
     }
 
     //暴露jumpInput
