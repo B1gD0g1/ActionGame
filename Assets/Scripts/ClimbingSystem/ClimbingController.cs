@@ -29,11 +29,11 @@ public class ClimbingController : MonoBehaviour
             matchPositionWeight = Vector3.one
         };
 
-        Quaternion targetRotation = Quaternion.LookRotation(-ledge.forward);
+        Quaternion targetRotation = Quaternion.LookRotation(ledge.right);
 
         yield return playerMovement.DoAction(anim, matchParams, targetRotation, true);
 
-        playerMovement.isHanging = true;
+        playerMovement.IsHanging = true;
     }  
 
     private Vector3 GetHandPosition(Transform ledge)
