@@ -11,6 +11,7 @@ public class InputManager : MonoBehaviour
     private PlayerMovement playerMovement;
     private ParkourControllerScript parkourController;
     private EnvironmentCheck environmentCheck;
+    private ClimbingController climbingController;
 
     public float moveAmount;
 
@@ -36,6 +37,7 @@ public class InputManager : MonoBehaviour
         playerMovement = GetComponent<PlayerMovement>();
         parkourController = GetComponent<ParkourControllerScript>();
         environmentCheck = GetComponent<EnvironmentCheck>();
+        climbingController = GetComponent<ClimbingController>();
     }
 
     private void OnEnable()
@@ -189,12 +191,24 @@ public class InputManager : MonoBehaviour
 
     private void HandleClimbInput()
     {
-        if (jumpInput)
+        if (!playerMovement.isHanging)
         {
-            if (environmentCheck.ClimbeLedgeCheck(transform.forward, out RaycastHit climbHitInfo))
+            if (jumpInput && !playerMovement.InAction)
             {
-                Debug.Log("攀爬点已找到");
+                if (environmentCheck.ClimbeLedgeCheck(transform.forward, out RaycastHit climbHitInfo))
+                {
+                    playerMovement.SetControl(false);
+
+                    Debug.Log("攀爬点已找到");
+                    StartCoroutine(climbingController.JumpeToLedge("IdleToHang",
+                        climbHitInfo.transform, 0.45f, 0.76f));
+                }
             }
+        }
+        else
+        {
+            //从这个攀爬点跳到另一个攀爬点
+
         }
     }
 

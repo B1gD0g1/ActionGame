@@ -37,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isOnObstacle;
     public bool isJumping = false;
     public bool isSlope;
+    public bool isHanging { get; set; }
 
     public bool InAction { get; private set; }
 
@@ -78,6 +79,9 @@ public class PlayerMovement : MonoBehaviour
     public void HandleAllMovement()
     {
         if (hasControl == false)
+            return;
+
+        if (isHanging)
             return;
 
         HandleMovement();
