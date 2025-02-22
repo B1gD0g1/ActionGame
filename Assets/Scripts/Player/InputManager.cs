@@ -223,21 +223,22 @@ public class InputManager : MonoBehaviour
                 currentPoint = neighbour.climbPoint;
 
                 if (neighbour.direction.y == 1)
-                {
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f));
-                }
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset: new Vector3(0.18f, 0.02f, 0.3f)));
                 else if (neighbour.direction.y == -1)
-                {
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f));
-                }
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f, handOffset: new Vector3(0.18f, 0.02f, 0.3f)));
                 else if (neighbour.direction.x == 1)
-                {
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopRight", currentPoint.transform, 0.57f, 0.84f));
-                }
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopRight", currentPoint.transform, 0.20f, 0.50f));
                 else if (neighbour.direction.x == -1)
-                {
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopLeft", currentPoint.transform, 0.58f, 0.83f));
-                }
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopLeft", currentPoint.transform, 0.20f, 0.50f));
+            }
+            else if (neighbour.connectionType == ConnectionType.Move)
+            {
+                currentPoint = neighbour.climbPoint;
+
+                if (neighbour.direction.x == 1)
+                    StartCoroutine(climbingController.JumpeToLedge("ShimmyRight", currentPoint.transform, 0.15f, 0.58f));
+                else if (neighbour.direction.x == -1)
+                    StartCoroutine(climbingController.JumpeToLedge("ShimmyLeft", currentPoint.transform, 0.15f, 0.58f, AvatarTarget.LeftHand));
             }
         }
     }

@@ -18,12 +18,13 @@ public class ClimbingController : MonoBehaviour
     }
 
 
-    public IEnumerator JumpeToLedge(string anim, Transform ledge, float matchStartTime, float matchTargetTime)
+    public IEnumerator JumpeToLedge(string anim, Transform ledge, float matchStartTime, float matchTargetTime,
+        AvatarTarget hand = AvatarTarget.RightHand, Vector3? handOffset = null)
     {
         var matchParams = new MatchTargetParams()
         {
-            matchPosition = GetHandPosition(ledge),
-            matchBodyPart = AvatarTarget.RightHand,
+            matchPosition = GetHandPosition(ledge, hand, handOffset),
+            matchBodyPart = hand,
             matchStartTime = matchStartTime,
             matchTargetTime = matchTargetTime,
             matchPositionWeight = Vector3.one
@@ -36,9 +37,13 @@ public class ClimbingController : MonoBehaviour
         playerMovement.IsHanging = true;
     }  
 
-    private Vector3 GetHandPosition(Transform ledge)
+    private Vector3 GetHandPosition(Transform ledge, AvatarTarget hand, Vector3? handOffset)
     {
-        return ledge.position - ledge.right * 0.07f + ledge.up * 0.05f - ledge.forward * 0.2f;
+        var offsetValue = (handOffset != null) ? handOffset.Value : new Vector3(0.07f, 0.05f, 0.38f);
+
+        var hDir = hand == AvatarTarget.RightHand ? ledge.forward : -ledge.forward;
+
+        return ledge.position - ledge.right * offsetValue.x + ledge.up * offsetValue.y - hDir * offsetValue.z;
     } 
 
     //Ëæ»ú²¥·ÅIdle¶¯»­

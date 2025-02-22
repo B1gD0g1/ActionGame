@@ -218,7 +218,7 @@ public class PlayerMovement : MonoBehaviour
         InAction = true;
 
         // 执行攀爬动画
-        animator.CrossFade(animationName, 0.2f);
+        animator.CrossFadeInFixedTime(animationName, 0.2f);
         yield return null;
 
         // 通知输入管理器开始攀爬
@@ -229,6 +229,8 @@ public class PlayerMovement : MonoBehaviour
         {
             Debug.LogError("动作名称不匹配！");
         }
+
+        float rotationStartTime = (matchTargetParams != null)? matchTargetParams.matchStartTime : 0f;
 
         float timer = 0f;
         while (timer <= animatorState.length)
