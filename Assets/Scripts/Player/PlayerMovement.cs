@@ -236,8 +236,9 @@ public class PlayerMovement : MonoBehaviour
         while (timer <= animatorState.length)
         {
             timer += Time.deltaTime;
+            float normalizedTime = timer / animatorState.length;
 
-            if (rotate)
+            if (rotate && normalizedTime > rotationStartTime)
             {
                 transform.rotation = Quaternion.RotateTowards(transform.rotation,
                     targetRotation,
