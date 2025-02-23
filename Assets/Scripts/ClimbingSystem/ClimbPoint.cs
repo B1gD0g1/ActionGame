@@ -5,8 +5,10 @@ using UnityEngine;
 
 public class ClimbPoint : MonoBehaviour
 {
+    //是否为最高点
+    [SerializeField] private bool mountPoint;
     [SerializeField] List<Neighbour> neighbours;
-
+    
 
     private void Awake()
     {
@@ -61,6 +63,7 @@ public class ClimbPoint : MonoBehaviour
         }
     }
 
+    public bool MountPoint => mountPoint;
 }
 
 [System.Serializable]

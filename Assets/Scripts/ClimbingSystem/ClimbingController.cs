@@ -64,6 +64,52 @@ public class ClimbingController : MonoBehaviour
         return ledge.position - hDir * offsetValue.x + ledge.up * offsetValue.y - ledge.forward * offsetValue.z;
     } 
 
+    public IEnumerator JumpFromHang()
+    {
+        playerMovement.IsHanging = false;
+        yield return playerMovement.DoAction("JumpFromHang");
+
+        playerMovement.ResetTargetRotation();
+        playerMovement.SetControl(true);
+    }
+
+    public IEnumerator MountFromHang()
+    {
+        playerMovement.IsHanging = false;
+        yield return playerMovement.DoAction("MountFromHang");
+
+        //启用角色控制器，防止播放站立动画时穿模
+        playerMovement.EnableCharacterController(true);
+
+        //等待站立动画播放完才能控制移动
+        yield return new WaitForSeconds(0.5f);
+
+        playerMovement.ResetTargetRotation();
+        playerMovement.SetControl(true);
+    }
+
+    public ClimbPoint GetNearestClimbPoint(Transform ledge, Vector3 hitPoint)
+    {
+        var points = ledge.GetComponentsInChildren<ClimbPoint>();
+
+        ClimbPoint nearestPoint = null;
+        //存储最近的点
+        float nearestPointDistance = Mathf.Infinity;
+
+        foreach (var point in points)
+        {
+            var distance = Vector3.Distance(point.transform.position, hitPoint);
+
+            if (distance < nearestPointDistance)
+            {
+                nearestPoint = point;
+                nearestPointDistance = distance;
+            }
+        }
+
+        return nearestPoint;
+    }
+
     //随机播放Idle动画
     public void PlayIdleAnimationRandomly()
     {

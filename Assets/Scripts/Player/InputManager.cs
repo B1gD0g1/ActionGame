@@ -30,6 +30,7 @@ public class InputManager : MonoBehaviour
     [Header("移动按钮")]
     [SerializeField] private bool sprintInput;
     [SerializeField] private bool jumpInput;  //控制跳跃输入
+    [SerializeField] private bool LandingInput;
 
     [Header("攀爬移动")]
     private ClimbPoint currentPoint;
@@ -56,10 +57,22 @@ public class InputManager : MonoBehaviour
             playerControls.PlayerActions.Sprint.canceled += InputManager_OnSprintCanceled;
             playerControls.PlayerActions.Jump.performed += InputManager_OnJumpPerformed;
             playerControls.PlayerActions.Jump.canceled += InputManager_OnJumpCanceled;
+            playerControls.PlayerActions.JumpFromHang.performed += InputManager_OnJumpFromHangPerformed;
+            playerControls.PlayerActions.JumpFromHang.canceled += InputManager_OnJumpFromHangCanceled;
         }
 
         // 启用 PlayerControls，输入事件开始监听
         playerControls.Enable();
+    }
+
+    private void InputManager_OnJumpFromHangCanceled(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        LandingInput = false;
+    }
+
+    private void InputManager_OnJumpFromHangPerformed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+    {
+        LandingInput = true;
     }
 
     private void InputManager_OnJumpCanceled(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -200,23 +213,50 @@ public class InputManager : MonoBehaviour
             {
                 if (environmentCheck.ClimbeLedgeCheck(environmentCheck.transform.forward, out RaycastHit climbHitInfo))
                 {
-                    currentPoint = climbHitInfo.transform.GetComponent<ClimbPoint>();
+                    //currentPoint = climbHitInfo.transform.GetComponent<ClimbPoint>();
+                    currentPoint = climbingController.GetNearestClimbPoint(climbHitInfo.transform, climbHitInfo.point);
 
                     playerMovement.SetControl(false);
                     UnityEngine.Debug.Log("攀爬点已找到");
                     StartCoroutine(climbingController.JumpeToLedge("IdleToHang",
-                        climbHitInfo.transform, 0.45f, 0.76f));
+                        currentPoint.transform, 0.45f, 0.76f));
                 }
             }
+
+            if (LandingInput && !playerMovement.InAction)
+            {
+                if (environmentCheck.DropLedgeCheck(out RaycastHit ledgeHit))
+                {
+                    UnityEngine.Debug.Log("找到攀爬点！！！");
+                    
+                    currentPoint = climbingController.GetNearestClimbPoint(ledgeHit.transform, ledgeHit.point);
+
+                    playerMovement.SetControl(false);
+                    StartCoroutine(climbingController.JumpeToLedge("DropToHang",
+                        currentPoint.transform, 0.17f, 0.66f, handOffset: new Vector3(0.2f, 0.03f, 0.02f)));
+                }
+            }
+
         }
         else
         {
-            //从这个攀爬点跳到另一个攀爬点
-            //float h = Mathf.Round(Input.GetAxisRaw("Horizontal"));
-            //float v = Mathf.Round(Input.GetAxisRaw("Vertical"));
-            //var inputDir = new Vector2(h, v);
+            //从攀爬点着陆
+            if (LandingInput && !playerMovement.InAction)
+            {
+                StartCoroutine(climbingController.JumpFromHang());
+                return;
+            }
+            
             if (playerMovement.InAction || movementInput == Vector2.zero) return;
 
+            //攀爬到最高点上屋顶
+            if (currentPoint.MountPoint && movementInput.y == 1)
+            {
+                StartCoroutine(climbingController.MountFromHang());
+                return;
+            }
+
+            //从当前攀爬点跳到另一个攀爬点
             var neighbour = currentPoint.GetNeighbour(movementInput);
 
             if (neighbour == null) return;

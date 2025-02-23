@@ -212,8 +212,8 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    public IEnumerator DoAction(string animationName, MatchTargetParams matchTargetParams,
-        Quaternion targetRotation, bool rotate = false, float postActionDelay = 0)
+    public IEnumerator DoAction(string animationName, MatchTargetParams matchTargetParams = null,
+        Quaternion targetRotation = new Quaternion(), bool rotate = false, float postActionDelay = 0)
     {
         InAction = true;
 
@@ -293,6 +293,16 @@ public class PlayerMovement : MonoBehaviour
             animatorManager.SetFloatAnimator("Horizontal", 0f);
             targetRotation = transform.rotation;
         }
+    }
+
+    public void EnableCharacterController(bool enabled)
+    {
+        characterController.enabled = enabled;
+    }
+
+    public void ResetTargetRotation()
+    {
+        targetRotation = transform.rotation;
     }
 
     //µÿ√ÊºÏ≤‚

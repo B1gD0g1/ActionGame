@@ -134,6 +134,23 @@ public class EnvironmentCheck : MonoBehaviour
                 return true;
             }
         }
+        return false;
+    }
+
+    public bool DropLedgeCheck(out RaycastHit LedgeHit)
+    {
+        LedgeHit = new RaycastHit();
+
+        var origin = transform.position + Vector3.down * 0.1f + transform.forward * 2f;
+
+
+        if (Physics.Raycast(origin, -transform.forward, out RaycastHit hit, 3f, climbLedgeLayer))
+        {
+            LedgeHit = hit;
+            return true;
+        }
+
+        Debug.DrawLine(origin, origin - transform.forward * 3f, UnityEngine.Color.magenta);
 
         return false;
     }

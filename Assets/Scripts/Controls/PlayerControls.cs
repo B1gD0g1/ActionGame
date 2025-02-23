@@ -246,6 +246,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""JumpFromHang"",
+                    ""type"": ""Button"",
+                    ""id"": ""0347d59c-691a-4c9b-aa15-1dddf5ff4f3c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -292,6 +301,28 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7e159af7-8591-43e4-8c82-d2cf26694ce4"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""JumpFromHang"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7a25a3d7-43dd-447b-a9e6-f8b91e4496dd"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""JumpFromHang"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -306,6 +337,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_PlayerActions = asset.FindActionMap("PlayerActions", throwIfNotFound: true);
         m_PlayerActions_Sprint = m_PlayerActions.FindAction("Sprint", throwIfNotFound: true);
         m_PlayerActions_Jump = m_PlayerActions.FindAction("Jump", throwIfNotFound: true);
+        m_PlayerActions_JumpFromHang = m_PlayerActions.FindAction("JumpFromHang", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -423,12 +455,14 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private List<IPlayerActionsActions> m_PlayerActionsActionsCallbackInterfaces = new List<IPlayerActionsActions>();
     private readonly InputAction m_PlayerActions_Sprint;
     private readonly InputAction m_PlayerActions_Jump;
+    private readonly InputAction m_PlayerActions_JumpFromHang;
     public struct PlayerActionsActions
     {
         private @PlayerControls m_Wrapper;
         public PlayerActionsActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Sprint => m_Wrapper.m_PlayerActions_Sprint;
         public InputAction @Jump => m_Wrapper.m_PlayerActions_Jump;
+        public InputAction @JumpFromHang => m_Wrapper.m_PlayerActions_JumpFromHang;
         public InputActionMap Get() { return m_Wrapper.m_PlayerActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -444,6 +478,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Jump.started += instance.OnJump;
             @Jump.performed += instance.OnJump;
             @Jump.canceled += instance.OnJump;
+            @JumpFromHang.started += instance.OnJumpFromHang;
+            @JumpFromHang.performed += instance.OnJumpFromHang;
+            @JumpFromHang.canceled += instance.OnJumpFromHang;
         }
 
         private void UnregisterCallbacks(IPlayerActionsActions instance)
@@ -454,6 +491,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Jump.started -= instance.OnJump;
             @Jump.performed -= instance.OnJump;
             @Jump.canceled -= instance.OnJump;
+            @JumpFromHang.started -= instance.OnJumpFromHang;
+            @JumpFromHang.performed -= instance.OnJumpFromHang;
+            @JumpFromHang.canceled -= instance.OnJumpFromHang;
         }
 
         public void RemoveCallbacks(IPlayerActionsActions instance)
@@ -480,5 +520,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     {
         void OnSprint(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
+        void OnJumpFromHang(InputAction.CallbackContext context);
     }
 }
