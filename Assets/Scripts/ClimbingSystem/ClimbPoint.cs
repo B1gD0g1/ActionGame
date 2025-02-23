@@ -49,7 +49,7 @@ public class ClimbPoint : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Debug.DrawRay(transform.position, -transform.right, Color.red);
+        Debug.DrawRay(transform.position, transform.forward, Color.blue);
 
         foreach (var neighbour in neighbours)
         {

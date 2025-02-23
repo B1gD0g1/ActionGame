@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private float walkingSpeed = 2f;
     [SerializeField] private float runningSpeed = 6f;
-    [SerializeField] private float rotationSpeed = 12f;
+    [SerializeField] private float rotationSpeed = 20f;
     [SerializeField] private float fallingSpeed;
 
     //记录最后一次有效的移动方向
@@ -240,7 +240,7 @@ public class PlayerMovement : MonoBehaviour
 
             if (rotate && normalizedTime > rotationStartTime)
             {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation,
+                transform.rotation = Quaternion.Slerp(transform.rotation,
                     targetRotation,
                     RotationSpeed * Time.deltaTime);
             }

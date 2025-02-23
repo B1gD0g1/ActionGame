@@ -198,7 +198,7 @@ public class InputManager : MonoBehaviour
         {
             if (jumpInput && !playerMovement.InAction)
             {
-                if (environmentCheck.ClimbeLedgeCheck(transform.forward, out RaycastHit climbHitInfo))
+                if (environmentCheck.ClimbeLedgeCheck(environmentCheck.transform.forward, out RaycastHit climbHitInfo))
                 {
                     currentPoint = climbHitInfo.transform.GetComponent<ClimbPoint>();
 
@@ -212,6 +212,9 @@ public class InputManager : MonoBehaviour
         else
         {
             //从这个攀爬点跳到另一个攀爬点
+            //float h = Mathf.Round(Input.GetAxisRaw("Horizontal"));
+            //float v = Mathf.Round(Input.GetAxisRaw("Vertical"));
+            //var inputDir = new Vector2(h, v);
             if (playerMovement.InAction || movementInput == Vector2.zero) return;
 
             var neighbour = currentPoint.GetNeighbour(movementInput);
@@ -223,22 +226,22 @@ public class InputManager : MonoBehaviour
                 currentPoint = neighbour.climbPoint;
 
                 if (neighbour.direction.y == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset: new Vector3(0.18f, 0.02f, 0.3f)));
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset:new Vector3(0.33f, 0.02f, -0.15f)));
                 else if (neighbour.direction.y == -1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f, handOffset: new Vector3(0.18f, 0.02f, 0.3f)));
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
                 else if (neighbour.direction.x == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopRight", currentPoint.transform, 0.20f, 0.50f));
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopRight", currentPoint.transform, 0.20f, 0.50f, handOffset: new Vector3(0.33f, 0.01f, -0.09f)));
                 else if (neighbour.direction.x == -1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopLeft", currentPoint.transform, 0.20f, 0.50f));
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopLeft", currentPoint.transform, 0.20f, 0.50f, handOffset: new Vector3(0.42f, 0.01f, -0.09f)));
             }
             else if (neighbour.connectionType == ConnectionType.Move)
             {
                 currentPoint = neighbour.climbPoint;
 
                 if (neighbour.direction.x == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("ShimmyRight", currentPoint.transform, 0.15f, 0.58f));
+                    StartCoroutine(climbingController.JumpeToLedge("ShimmyRight", currentPoint.transform, 0.15f, 0.58f, handOffset: new Vector3(0.42f, 0.015f, -0.05f)));
                 else if (neighbour.direction.x == -1)
-                    StartCoroutine(climbingController.JumpeToLedge("ShimmyLeft", currentPoint.transform, 0.15f, 0.58f, AvatarTarget.LeftHand));
+                    StartCoroutine(climbingController.JumpeToLedge("ShimmyLeft", currentPoint.transform, 0.15f, 0.58f, AvatarTarget.LeftHand, handOffset: new Vector3(0.32f, 0.015f, -0.05f)));
             }
         }
     }
