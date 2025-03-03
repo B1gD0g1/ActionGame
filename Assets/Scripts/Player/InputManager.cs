@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class InputManager : MonoBehaviour
@@ -31,9 +32,17 @@ public class InputManager : MonoBehaviour
     [SerializeField] private bool sprintInput;
     [SerializeField] private bool jumpInput;  //控制跳跃输入
     [SerializeField] private bool LandingInput;
+    [SerializeField] private bool shootInput;
+    [SerializeField] private bool scopeInput;
+    [SerializeField] private bool reloadInput;
+    [SerializeField] private bool changeWeaponInput;
+    [SerializeField] private bool pauseInput;
+
 
     [Header("攀爬移动")]
     private ClimbPoint currentPoint;
+
+
 
     private void Awake()
     {
@@ -59,6 +68,15 @@ public class InputManager : MonoBehaviour
             playerControls.PlayerActions.Jump.canceled += InputManager_OnJumpCanceled;
             playerControls.PlayerActions.JumpFromHang.performed += InputManager_OnJumpFromHangPerformed;
             playerControls.PlayerActions.JumpFromHang.canceled += InputManager_OnJumpFromHangCanceled;
+
+            playerControls.PlayerActions.Shoot.performed += i => shootInput = true;
+            playerControls.PlayerActions.Shoot.canceled += i => shootInput = false;
+            playerControls.PlayerActions.Scope.performed += i => scopeInput = true;
+            playerControls.PlayerActions.Scope.canceled += i => scopeInput = false;
+            playerControls.PlayerActions.Reload.performed += i => reloadInput = true;
+            playerControls.PlayerActions.Reload.canceled += i => reloadInput = false;
+            playerControls.PlayerActions.Change.performed += i => changeWeaponInput = true;
+            playerControls.PlayerActions.Pause.performed += i => pauseInput = true;
         }
 
         // 启用 PlayerControls，输入事件开始监听
@@ -120,6 +138,8 @@ public class InputManager : MonoBehaviour
         HandleSprintInput();
         HandleJumpInput();  // 处理跳跃输入
         HandleClimbInput();
+        StartCoroutine(HandleChangeRifleInput());
+        HandlePauseInput();
     }
 
     private void HandleMovementInput()
@@ -145,14 +165,6 @@ public class InputManager : MonoBehaviour
             cameraInputY = cameraInput.y;
         }
 
-        ////玩家移动输入
-        //verticalInput = movementInput.y;
-        //horizontalInput = movementInput.x;
-
-        ////摄像机移动输入
-        //cameraInputX = cameraInput.x;
-        //cameraInputY = cameraInput.y;
-
         //计算移动量
         //Mathf.Clamp01将结果限制在 [0, 1] 范围内
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontalInput) + Mathf.Abs(verticalInput));
@@ -172,8 +184,8 @@ public class InputManager : MonoBehaviour
     //判断冲刺状态
     private void HandleSprintInput()
     {
-        if (sprintInput && moveAmount > 0.5f 
-            && (playerMovement.isGrounded == true || playerMovement.isOnObstacle == true) 
+        if (sprintInput && moveAmount > 0.5f
+            && (playerMovement.isGrounded == true || playerMovement.isOnObstacle == true)
             && playerMovement.IsOnLedge == false)
         {
             playerMovement.isRunning = true;
@@ -228,7 +240,7 @@ public class InputManager : MonoBehaviour
                 if (environmentCheck.DropLedgeCheck(out RaycastHit ledgeHit))
                 {
                     UnityEngine.Debug.Log("找到攀爬点！！！");
-                    
+
                     currentPoint = climbingController.GetNearestClimbPoint(ledgeHit.transform, ledgeHit.point);
 
                     playerMovement.SetControl(false);
@@ -246,7 +258,7 @@ public class InputManager : MonoBehaviour
                 StartCoroutine(climbingController.JumpFromHang());
                 return;
             }
-            
+
             if (playerMovement.InAction || movementInput == Vector2.zero) return;
 
             //攀爬到最高点上屋顶
@@ -266,7 +278,7 @@ public class InputManager : MonoBehaviour
                 currentPoint = neighbour.climbPoint;
 
                 if (neighbour.direction.y == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset:new Vector3(0.33f, 0.02f, -0.15f)));
+                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
                 else if (neighbour.direction.y == -1)
                     StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
                 else if (neighbour.direction.x == 1)
@@ -286,6 +298,22 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    private IEnumerator HandleChangeRifleInput()
+    {
+        yield return new WaitForSeconds(0.2f);
+        if (changeWeaponInput)
+        {
+            changeWeaponInput = false;
+        }
+    }
+    private void HandlePauseInput()
+    {
+        if (pauseInput)
+        {
+            pauseInput = false;
+        }
+    }
+
     // 设置攀爬状态
     public void SetJumpingState(bool isJumping)
     {
@@ -301,5 +329,20 @@ public class InputManager : MonoBehaviour
     public bool GetSprintInput()
     {
         return sprintInput;
+    }
+
+    public bool GetChangeRifleInput()
+    {
+        return changeWeaponInput;
+    }
+
+    public bool GetShootInput()
+    {
+        return shootInput;
+    }
+
+    public bool GetReloadInput()
+    {
+        return reloadInput;
     }
 }

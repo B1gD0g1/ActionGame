@@ -209,7 +209,6 @@ public class PlayerMovement : MonoBehaviour
             velocity = velocity.magnitude * dir;
             moveDirection = dir;
         }
-
     }
 
     public IEnumerator DoAction(string animationName, MatchTargetParams matchTargetParams = null,
