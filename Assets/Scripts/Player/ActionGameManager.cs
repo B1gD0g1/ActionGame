@@ -6,6 +6,7 @@ public class ActionGameManager : MonoBehaviour
 {
     [SerializeField] private InputManager inputManager;
     [SerializeField] private Animator animator;
+    private PlayerMovement playerMovement;
 
 
     public GameObject pistol;
@@ -22,6 +23,7 @@ public class ActionGameManager : MonoBehaviour
     private void Start()
     {
         inputManager = GetComponent<InputManager>();
+        playerMovement = GetComponent<PlayerMovement>();
         weapons = new GameObject[] { pistol, rifle };
         weaponAnimBools = new string[] { pistolAnimBool, rifleAnimBool };
     }

@@ -10,6 +10,7 @@ public class PlayerMovement : MonoBehaviour
     private EnvironmentCheck environmentCheck;
     private CharacterController characterController;
     private Animator animator;
+    [SerializeField] private CameraManager cameraManager;
 
 
     [Header("移动")]
@@ -37,6 +38,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isOnObstacle;
     public bool isJumping = false;
     public bool isSlope;
+    public bool isScoped;
+
     public bool IsHanging { get; set; }
 
     public bool InAction { get; private set; }
@@ -93,6 +96,7 @@ public class PlayerMovement : MonoBehaviour
         // 计算基于摄像机方向的移动向量
         desiredMoveDirection = camObject.forward * inputManager.verticalInput;
         desiredMoveDirection += camObject.right * inputManager.horizontalInput;
+
         desiredMoveDirection.Normalize();
         desiredMoveDirection.y = 0;// 不沿着垂直方向移动
 
@@ -107,6 +111,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if (inputManager.moveAmount > 0.5f)
             {
+
                 desiredMoveDirection *= walkingSpeed;
                 isMoving = true;
             }
@@ -137,7 +142,15 @@ public class PlayerMovement : MonoBehaviour
         Quaternion playerRotation = Quaternion.Slerp(transform.rotation, targetRotation,
             rotationSpeed * Time.deltaTime);
 
-        transform.rotation = playerRotation;
+        if (isScoped)
+        {
+            transform.rotation = Quaternion.Euler(cameraManager.GetPivotAngle(), 
+                cameraManager.GetLookAngle(), 0);
+        }
+        else
+        {
+            transform.rotation = playerRotation;
+        }
     }
 
     private void ApplyGravity()
@@ -229,7 +242,7 @@ public class PlayerMovement : MonoBehaviour
             Debug.LogError("动作名称不匹配！");
         }
 
-        float rotationStartTime = (matchTargetParams != null)? matchTargetParams.matchStartTime : 0f;
+        float rotationStartTime = (matchTargetParams != null) ? matchTargetParams.matchStartTime : 0f;
 
         float timer = 0f;
         while (timer <= animatorState.length)

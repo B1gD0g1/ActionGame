@@ -345,4 +345,9 @@ public class InputManager : MonoBehaviour
     {
         return reloadInput;
     }
+
+    public bool GetScopeInput()
+    {
+        return scopeInput;
+    }
 }

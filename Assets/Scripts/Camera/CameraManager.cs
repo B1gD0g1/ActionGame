@@ -6,7 +6,9 @@ public class CameraManager : MonoBehaviour
 {
     private InputManager inputManager;
 
+    [SerializeField] private new Camera camera;
     [SerializeField] private Transform playerTransform;
+    private PlayerMovement playerMovement;
 
 
     //摄像机枢轴，用于控制垂直旋转（视角上下看）
@@ -28,6 +30,9 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float minimumPivotAngle = -30f;
     [SerializeField] private float maximumPivotAngle = 30f;
 
+    [Header("瞄准设置")]
+    [SerializeField] private float scopedFOV;
+    [SerializeField] private float defaultFOV;
 
 
     private void Awake()
@@ -36,23 +41,27 @@ public class CameraManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        playerTransform = FindObjectOfType<PlayerManager>().transform;
+        inputManager = FindObjectOfType<InputManager>();
+        playerMovement = FindObjectOfType<PlayerMovement>();
+        playerTransform = FindObjectOfType<InputManager>().transform;
     }
 
     private void Update()
     {
-        inputManager = FindObjectOfType<InputManager>();
+
     }
 
     public void HandleAllCameraMovement()
     {
         FollowTarget();
         RotateCamera();
+        HandleScopedFOV();
     }
 
     private void FollowTarget()
     {
-        Vector3 targetPosition = Vector3.SmoothDamp(transform.position, playerTransform.position, ref camFollowVelocity, camFollowSpeed);
+        Vector3 targetPosition = Vector3.SmoothDamp(transform.position, playerTransform.position, 
+            ref camFollowVelocity, camFollowSpeed);
         transform.position = targetPosition;
     }
 
@@ -64,7 +73,8 @@ public class CameraManager : MonoBehaviour
         //更新水平旋转角度
         lookAngle = lookAngle + (inputManager.cameraInputX * camLookSpeed);
         //更新垂直旋转角度
-        pivotAngle = pivotAngle - (inputManager.cameraInputY * camPivotSpeed);
+        pivotAngle -= inputManager.cameraInputY * camPivotSpeed;
+
         pivotAngle = Mathf.Clamp(pivotAngle, minimumPivotAngle, maximumPivotAngle);
 
         //设置水平旋转
@@ -78,5 +88,46 @@ public class CameraManager : MonoBehaviour
         rotation.x = pivotAngle;
         targetRotation = Quaternion.Euler(rotation);
         cameraPivot.localRotation = targetRotation;
+
+        if (playerMovement.isScoped == true)
+        {
+            camLookSpeed = 0.2f;
+            camPivotSpeed = 0.2f;
+            minimumPivotAngle = -10f;
+            maximumPivotAngle = 10f;
+
+            //playerTransform.rotation = Quaternion.Euler(pivotAngle, lookAngle, 0);
+        }
+        else
+        {
+            camLookSpeed = 0.1f;
+            camPivotSpeed = 0.1f;
+            minimumPivotAngle = -30f;
+            maximumPivotAngle = 30f;
+        }
+    }
+
+    private void HandleScopedFOV()
+    {
+        if (inputManager.GetScopeInput())
+        {
+            camera.fieldOfView = scopedFOV;
+            playerMovement.isScoped = true;
+        }
+        else
+        {
+            camera.fieldOfView = defaultFOV;
+            playerMovement.isScoped = false;
+        }
+    }
+
+    public float GetLookAngle()
+    {
+        return lookAngle;
+    }
+
+    public float GetPivotAngle()
+    {
+        return pivotAngle;
     }
 }
