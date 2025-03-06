@@ -56,9 +56,22 @@ public class ShootingController : MonoBehaviour
         if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, fireRange))
         {
             Debug.Log("击中" + hit.transform.name);
+
+            Guard guard = hit.transform.GetComponent<Guard>();
+
+            if (guard != null)
+            {
+                guard.CharacterHitDamage(giveDamageOf);
+
+                //血液效果
+
+                //如果有守卫看见尸体，则提示守卫
+            }
         }
 
         currentMagzine--;
+
+        //播放射击声音
     }
 
     private IEnumerator Reload()

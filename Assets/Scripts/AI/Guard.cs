@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -65,16 +66,18 @@ public class Guard : MonoBehaviour
         if (isAlerted && playerInVisionRadius && !playerInShootingRadius)
         {
             //×·ÖðÍæ¼Ò
+            ChasePlayer();
         }
 
         if (isAlerted && playerInVisionRadius && playerInShootingRadius)
         {
             //Éä»÷Íæ¼Ò
+            ShootPlayer();
         }
 
         if (isAlerted)
         {
-            visionRadius += 30f;
+            visionRadius = 30f;
         }
     }
 
@@ -120,4 +123,88 @@ public class Guard : MonoBehaviour
         }
     }
 
+    private void ChasePlayer()
+    {
+        Vector3 directionToPlayer = (playerBody.transform.position - transform.position).normalized;
+        Vector3 moveVector = directionToPlayer * currentMovingSpeed * Time.deltaTime;
+
+        characterController.Move(moveVector);
+
+        Vector3 lookDirection = new Vector3(directionToPlayer.x, 0, directionToPlayer.z);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDirection),
+            Time.deltaTime * turningSpeed);
+
+        animator.SetBool("Run", true);
+        animator.SetBool("Walk", false);
+        animator.SetBool("Shoot", false);
+
+        currentMovingSpeed = runningSpeed;
+    }
+
+    private void ShootPlayer()
+    {
+        currentMovingSpeed = 0f;
+
+        Vector3 directionToPlayer = (playerBody.transform.position - transform.position).normalized;
+
+        Vector3 lookDirection = new Vector3(directionToPlayer.x, 0, directionToPlayer.z);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookDirection),
+            Time.deltaTime * turningSpeed);
+
+
+        animator.SetBool("Run", false);
+        animator.SetBool("Walk", false);
+        animator.SetBool("Shoot", true);
+
+        if (!previouslyShoot)
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(shootingRaycastArea.transform.position, shootingRaycastArea.transform.forward,
+                out hit, shootingRange))
+            {
+                Debug.Log("Guard Hit" + hit.transform.name);
+
+                PlayerMovement player = hit.transform.GetComponent<PlayerMovement>();
+                if (player != null)
+                {
+                    player.CharacterHitDamage(giveDamageOf);
+
+                    //ÊÓ¾õÐ§¹û
+                }
+            }
+
+            previouslyShoot = true;
+            Invoke(nameof(ActiveShooting), timebtwShoot);
+        }
+    }
+
+    private void ActiveShooting()
+    {
+        previouslyShoot = false;
+    }
+
+    public void CharacterHitDamage(float takeDamage)
+    {
+        visionRadius = 155f;
+        isAlerted = true;
+        presentHealth -= takeDamage;
+
+        if (presentHealth <= 0)
+        {
+            animator.SetBool("Die", true);
+            CharacterDie();
+        }
+    }
+
+    private void CharacterDie()
+    {
+        currentMovingSpeed = 0f;
+        shootingRange = 0f;
+
+        //hide guard body Òþ²ØÊ¬Ìå
+
+        this.enabled = false;
+
+        //disable the UI 
+    }
 }

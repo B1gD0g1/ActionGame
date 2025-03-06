@@ -12,6 +12,9 @@ public class PlayerMovement : MonoBehaviour
     private Animator animator;
     [SerializeField] private CameraManager cameraManager;
 
+    [Header("角色数值")]
+    [SerializeField] private float characterHealth;
+    [SerializeField] private float presentHealth;
 
     [Header("移动")]
     [SerializeField] private Vector3 desiredMoveDirection;
@@ -77,6 +80,8 @@ public class PlayerMovement : MonoBehaviour
         environmentCheck = GetComponent<EnvironmentCheck>();
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+
+        presentHealth = characterHealth;
     }
 
     public void HandleAllMovement()
@@ -380,6 +385,22 @@ public class PlayerMovement : MonoBehaviour
     }
 
     public float RotationSpeed => rotationSpeed;
+
+
+    public void CharacterHitDamage(float takeDamage)
+    {
+        presentHealth -= takeDamage;
+
+        if (presentHealth <= 0)
+        {
+            CharacterDie();
+        }
+    }
+
+    private void CharacterDie()
+    {
+        Debug.Log("玩家死亡");
+    }
 }
 
 
