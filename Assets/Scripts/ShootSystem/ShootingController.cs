@@ -57,11 +57,24 @@ public class ShootingController : MonoBehaviour
         {
             Debug.Log("击中" + hit.transform.name);
 
+            //警卫
             Guard guard = hit.transform.GetComponent<Guard>();
 
             if (guard != null)
             {
                 guard.CharacterHitDamage(giveDamageOf);
+
+                //血液效果
+
+                //如果有守卫看见尸体，则提示守卫
+            }
+
+            //NPC
+            WalkCharacterAI characterNPC = hit.transform.GetComponent<WalkCharacterAI>();
+
+            if (characterNPC != null)
+            {
+                characterNPC.CharacterHitDamage(giveDamageOf);
 
                 //血液效果
 

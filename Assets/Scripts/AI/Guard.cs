@@ -40,11 +40,17 @@ public class Guard : MonoBehaviour
     private Vector3 velocity;
     [SerializeField] private bool isAlerted = false;
 
+    [SerializeField] private GameObject alertUI;
+    [SerializeField] private GameObject cautionUI;
+    private DeadBodyPick deadBodyPick;
+
 
     private void Start()
     {
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+        deadBodyPick = GetComponent<DeadBodyPick>();
+        deadBodyPick.enabled = false;
 
         currentMovingSpeed = movingSpeed;
         presentHealth = characterHealth;
@@ -76,6 +82,8 @@ public class Guard : MonoBehaviour
 
         if (isAlerted)
         {
+            alertUI.SetActive(true);
+            cautionUI.SetActive(false);
             visionRadius = 30f;
         }
     }
@@ -208,7 +216,10 @@ public class Guard : MonoBehaviour
         //hide guard body Òþ²ØÊ¬Ìå
 
         this.enabled = false;
+        deadBodyPick.enabled = true;
 
         //disable the UI 
+        alertUI.SetActive(false);
+        cautionUI.SetActive(false);
     }
 }
