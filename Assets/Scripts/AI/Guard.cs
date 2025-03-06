@@ -80,6 +80,11 @@ public class Guard : MonoBehaviour
         }
     }
 
+    public void AlertGuard()
+    {
+        isAlerted = true;
+    }
+
     private void Walk()
     {
         if (wayPoints.Count == 0)
