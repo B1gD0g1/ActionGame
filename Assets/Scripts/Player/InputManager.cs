@@ -37,6 +37,8 @@ public class InputManager : MonoBehaviour
     [SerializeField] private bool reloadInput;
     [SerializeField] private bool changeWeaponInput;
     [SerializeField] private bool pauseInput;
+    [SerializeField] private bool FInput;
+
 
 
     [Header("攀爬移动")]
@@ -77,6 +79,7 @@ public class InputManager : MonoBehaviour
             playerControls.PlayerActions.Reload.canceled += i => reloadInput = false;
             playerControls.PlayerActions.Change.performed += i => changeWeaponInput = true;
             playerControls.PlayerActions.Pause.performed += i => pauseInput = true;
+            playerControls.PlayerActions.F.performed += i => FInput = true;
         }
 
         // 启用 PlayerControls，输入事件开始监听
@@ -140,6 +143,7 @@ public class InputManager : MonoBehaviour
         HandleClimbInput();
         StartCoroutine(HandleChangeRifleInput());
         HandlePauseInput();
+        StartCoroutine(HandleFInput());
     }
 
     private void HandleMovementInput()
@@ -200,15 +204,18 @@ public class InputManager : MonoBehaviour
     {
         var hitData = environmentCheck.CheckObstacle();
 
-        if (jumpInput && !playerMovement.isJumping && !playerMovement.IsHanging)
+        if (!playerMovement.isPicking)
         {
-            parkourController.TryStartParkour(hitData);  // 尝试开始跑酷/攀爬动作
-        }
+            if (jumpInput && !playerMovement.isJumping && !playerMovement.IsHanging)
+            {
+                parkourController.TryStartParkour(hitData);  // 尝试开始跑酷/攀爬动作
+            }
 
-        if (playerMovement.IsOnLedge && playerMovement.InAction == false
-            && hitData.hitFound == false)
-        {
-            parkourController.TryStartJumpDown(hitData);  // 尝试开始跑酷/攀爬动作
+            if (playerMovement.IsOnLedge && playerMovement.InAction == false
+                && hitData.hitFound == false)
+            {
+                parkourController.TryStartJumpDown(hitData);  // 尝试开始跑酷/攀爬动作
+            }
         }
 
         //if (playerMovement.playerOnLedge)
@@ -219,81 +226,86 @@ public class InputManager : MonoBehaviour
 
     private void HandleClimbInput()
     {
-        if (!playerMovement.IsHanging)
+        if (!playerMovement.isPicking)
         {
-            if (jumpInput && !playerMovement.InAction)
+
+
+            if (!playerMovement.IsHanging)
             {
-                if (environmentCheck.ClimbeLedgeCheck(environmentCheck.transform.forward, out RaycastHit climbHitInfo))
+                if (jumpInput && !playerMovement.InAction)
                 {
-                    //currentPoint = climbHitInfo.transform.GetComponent<ClimbPoint>();
-                    currentPoint = climbingController.GetNearestClimbPoint(climbHitInfo.transform, climbHitInfo.point);
+                    if (environmentCheck.ClimbeLedgeCheck(environmentCheck.transform.forward, out RaycastHit climbHitInfo))
+                    {
+                        //currentPoint = climbHitInfo.transform.GetComponent<ClimbPoint>();
+                        currentPoint = climbingController.GetNearestClimbPoint(climbHitInfo.transform, climbHitInfo.point);
 
-                    playerMovement.SetControl(false);
-                    UnityEngine.Debug.Log("攀爬点已找到");
-                    StartCoroutine(climbingController.JumpeToLedge("IdleToHang",
-                        currentPoint.transform, 0.45f, 0.76f));
+                        playerMovement.SetControl(false);
+                        UnityEngine.Debug.Log("攀爬点已找到");
+                        StartCoroutine(climbingController.JumpeToLedge("IdleToHang",
+                            currentPoint.transform, 0.45f, 0.76f));
+                    }
                 }
-            }
 
-            if (LandingInput && !playerMovement.InAction)
-            {
-                if (environmentCheck.DropLedgeCheck(out RaycastHit ledgeHit))
+                if (LandingInput && !playerMovement.InAction)
                 {
-                    UnityEngine.Debug.Log("找到攀爬点！！！");
+                    if (environmentCheck.DropLedgeCheck(out RaycastHit ledgeHit))
+                    {
+                        UnityEngine.Debug.Log("找到攀爬点！！！");
 
-                    currentPoint = climbingController.GetNearestClimbPoint(ledgeHit.transform, ledgeHit.point);
+                        currentPoint = climbingController.GetNearestClimbPoint(ledgeHit.transform, ledgeHit.point);
 
-                    playerMovement.SetControl(false);
-                    StartCoroutine(climbingController.JumpeToLedge("DropToHang",
-                        currentPoint.transform, 0.17f, 0.66f, handOffset: new Vector3(0.2f, 0.03f, 0.02f)));
+                        playerMovement.SetControl(false);
+                        StartCoroutine(climbingController.JumpeToLedge("DropToHang",
+                            currentPoint.transform, 0.17f, 0.66f, handOffset: new Vector3(0.2f, 0.03f, 0.02f)));
+                    }
                 }
+
             }
-
-        }
-        else
-        {
-            //从攀爬点着陆
-            if (LandingInput && !playerMovement.InAction)
+            else
             {
-                StartCoroutine(climbingController.JumpFromHang());
-                return;
-            }
+                //从攀爬点着陆
+                if (LandingInput && !playerMovement.InAction)
+                {
+                    StartCoroutine(climbingController.JumpFromHang());
+                    return;
+                }
 
-            if (playerMovement.InAction || movementInput == Vector2.zero) return;
+                if (playerMovement.InAction || movementInput == Vector2.zero) return;
 
-            //攀爬到最高点上屋顶
-            if (currentPoint.MountPoint && movementInput.y == 1)
-            {
-                StartCoroutine(climbingController.MountFromHang());
-                return;
-            }
+                //攀爬到最高点上屋顶
+                if (currentPoint.MountPoint && movementInput.y == 1)
+                {
+                    StartCoroutine(climbingController.MountFromHang());
+                    return;
+                }
 
-            //从当前攀爬点跳到另一个攀爬点
-            var neighbour = currentPoint.GetNeighbour(movementInput);
+                //从当前攀爬点跳到另一个攀爬点
+                var neighbour = currentPoint.GetNeighbour(movementInput);
 
-            if (neighbour == null) return;
+                if (neighbour == null) return;
 
-            if (neighbour.connectionType == ConnectionType.Jump && jumpInput)
-            {
-                currentPoint = neighbour.climbPoint;
+                if (neighbour.connectionType == ConnectionType.Jump && jumpInput)
+                {
+                    currentPoint = neighbour.climbPoint;
 
-                if (neighbour.direction.y == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
-                else if (neighbour.direction.y == -1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
-                else if (neighbour.direction.x == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopRight", currentPoint.transform, 0.20f, 0.50f, handOffset: new Vector3(0.33f, 0.01f, -0.09f)));
-                else if (neighbour.direction.x == -1)
-                    StartCoroutine(climbingController.JumpeToLedge("HangHopLeft", currentPoint.transform, 0.20f, 0.50f, handOffset: new Vector3(0.42f, 0.01f, -0.09f)));
-            }
-            else if (neighbour.connectionType == ConnectionType.Move)
-            {
-                currentPoint = neighbour.climbPoint;
+                    if (neighbour.direction.y == 1)
+                        StartCoroutine(climbingController.JumpeToLedge("HangHopUp", currentPoint.transform, 0.34f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
+                    else if (neighbour.direction.y == -1)
+                        StartCoroutine(climbingController.JumpeToLedge("HangHopDown", currentPoint.transform, 0.31f, 0.65f, handOffset: new Vector3(0.33f, 0.02f, -0.15f)));
+                    else if (neighbour.direction.x == 1)
+                        StartCoroutine(climbingController.JumpeToLedge("HangHopRight", currentPoint.transform, 0.20f, 0.50f, handOffset: new Vector3(0.33f, 0.01f, -0.09f)));
+                    else if (neighbour.direction.x == -1)
+                        StartCoroutine(climbingController.JumpeToLedge("HangHopLeft", currentPoint.transform, 0.20f, 0.50f, handOffset: new Vector3(0.42f, 0.01f, -0.09f)));
+                }
+                else if (neighbour.connectionType == ConnectionType.Move)
+                {
+                    currentPoint = neighbour.climbPoint;
 
-                if (neighbour.direction.x == 1)
-                    StartCoroutine(climbingController.JumpeToLedge("ShimmyRight", currentPoint.transform, 0.15f, 0.58f, handOffset: new Vector3(0.42f, 0.015f, -0.05f)));
-                else if (neighbour.direction.x == -1)
-                    StartCoroutine(climbingController.JumpeToLedge("ShimmyLeft", currentPoint.transform, 0.15f, 0.58f, AvatarTarget.LeftHand, handOffset: new Vector3(0.32f, 0.015f, -0.05f)));
+                    if (neighbour.direction.x == 1)
+                        StartCoroutine(climbingController.JumpeToLedge("ShimmyRight", currentPoint.transform, 0.15f, 0.58f, handOffset: new Vector3(0.42f, 0.015f, -0.05f)));
+                    else if (neighbour.direction.x == -1)
+                        StartCoroutine(climbingController.JumpeToLedge("ShimmyLeft", currentPoint.transform, 0.15f, 0.58f, AvatarTarget.LeftHand, handOffset: new Vector3(0.32f, 0.015f, -0.05f)));
+                }
             }
         }
     }
@@ -311,6 +323,15 @@ public class InputManager : MonoBehaviour
         if (pauseInput)
         {
             pauseInput = false;
+        }
+    }
+
+    private IEnumerator HandleFInput()
+    {
+        yield return new WaitForSeconds(0.2f);
+        if (FInput)
+        {
+            FInput = false;
         }
     }
 
@@ -349,5 +370,10 @@ public class InputManager : MonoBehaviour
     public bool GetScopeInput()
     {
         return scopeInput;
+    }
+
+    public bool GetFInput()
+    {
+        return FInput;
     }
 }

@@ -37,7 +37,6 @@ public class Guard : MonoBehaviour
 
     [Header("Character Controller and Gravity")]
     [SerializeField] private CharacterController characterController;
-    [SerializeField] private float gravity = 9.81f;
     private Vector3 velocity;
     [SerializeField] private bool isAlerted = false;
 

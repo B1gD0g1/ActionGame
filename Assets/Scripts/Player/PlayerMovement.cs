@@ -42,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isJumping = false;
     public bool isSlope;
     public bool isScoped;
+    public bool isPicking = false;
 
     public bool IsHanging { get; set; }
 
