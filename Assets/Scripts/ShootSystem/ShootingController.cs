@@ -11,12 +11,12 @@ public class ShootingController : MonoBehaviour
     [SerializeField] private Transform firePoint;
 
     [Header("武器数值")]
-    [SerializeField] private float fireRate = 1f;//射速
-    [SerializeField] private int magzineCapacity = 30;//弹匣容量
-    [SerializeField] private int maxAmmo = 300;
-    [SerializeField] private float fireRange = 100f;//射击长度
-    [SerializeField] private float giveDamageOf = 5f;
-    [SerializeField] private float reloadTime = 3f;
+    [SerializeField] private float fireRate;//射速
+    [SerializeField] private int magzineCapacity;//弹匣容量
+    [SerializeField] private int maxAmmo;
+    [SerializeField] private float fireRange;//射击长度
+    [SerializeField] private float giveDamageOf;
+    [SerializeField] private float reloadTime;
 
     private float nextFireTime;
     private int currentMagzine;
@@ -75,6 +75,18 @@ public class ShootingController : MonoBehaviour
             if (characterNPC != null)
             {
                 characterNPC.CharacterHitDamage(giveDamageOf);
+
+                //血液效果
+
+                //如果有守卫看见尸体，则提示守卫
+            }
+
+            //Boss
+            Boss boss = hit.transform.GetComponent<Boss>();
+
+            if (boss != null)
+            {
+                boss.CharacterHitDamage(giveDamageOf);
 
                 //血液效果
 
