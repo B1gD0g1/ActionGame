@@ -71,6 +71,16 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float groundedBufferTimer = 0f;  // 当前缓冲计时器
 
 
+    [Header("脚步")]
+    [SerializeField] private AudioSource leftFootAudioSource;
+    [SerializeField] private AudioSource rightFootAudioSource;
+    [SerializeField] private AudioClip[] footstepSounds;
+    [SerializeField] private float walkingFootstepInterval = 0.5f;
+    [SerializeField] private float runningFootstepInterval = 0.35f;
+    private float nextFootstepTime;
+    private bool isLeftFootstep = true;
+
+
     private Quaternion targetRotation;
 
     private void Awake()
@@ -83,6 +93,18 @@ public class PlayerMovement : MonoBehaviour
         animator = GetComponent<Animator>();
 
         presentHealth = characterHealth;
+    }
+
+    private void Update()
+    {
+        float footstepInterval = isRunning ? runningFootstepInterval : walkingFootstepInterval;
+
+        if (isMoving && (isGrounded || isOnObstacle) && Time.time >= nextFootstepTime
+            && !InAction && !IsHanging && !IsOnLedge)
+        {
+            PlayFootstepSound();
+            nextFootstepTime = Time.time + footstepInterval;
+        }
     }
 
     public void HandleAllMovement()
@@ -401,6 +423,20 @@ public class PlayerMovement : MonoBehaviour
     private void CharacterDie()
     {
         Debug.Log("玩家死亡");
+    }
+
+    //脚步声
+    private void PlayFootstepSound()
+    {
+        AudioSource footAudioSource = isLeftFootstep ? leftFootAudioSource : rightFootAudioSource;
+        if (footstepSounds.Length > 0)
+        {
+            AudioClip clip = footstepSounds[Random.Range(0, footstepSounds.Length)];
+            footAudioSource.volume = 0.5f;
+            footAudioSource.PlayOneShot(clip);
+        }
+
+        isLeftFootstep = !isLeftFootstep;
     }
 }
 

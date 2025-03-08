@@ -24,6 +24,14 @@ public class ShootingController : MonoBehaviour
 
     [SerializeField] private bool isReloading;
 
+    [Header("声音")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip shootingSoundClip;
+    [SerializeField] private AudioClip reloadingSoundClip;
+
+    [Header("武器特效")]
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private GameObject bloodEffect;
 
 
     private void Start()
@@ -52,6 +60,8 @@ public class ShootingController : MonoBehaviour
 
     private void Shoot()
     {
+        muzzleFlash.Play();
+
         RaycastHit hit;
         if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, fireRange))
         {
@@ -65,6 +75,8 @@ public class ShootingController : MonoBehaviour
                 guard.CharacterHitDamage(giveDamageOf);
 
                 //血液效果
+                GameObject bloodEfectGo = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+                Destroy(bloodEfectGo, 0.5f);
 
                 //如果有守卫看见尸体，则提示守卫
             }
@@ -77,6 +89,8 @@ public class ShootingController : MonoBehaviour
                 characterNPC.CharacterHitDamage(giveDamageOf);
 
                 //血液效果
+                GameObject bloodEfectGo = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+                Destroy(bloodEfectGo, 0.5f);
 
                 //如果有守卫看见尸体，则提示守卫
             }
@@ -89,6 +103,8 @@ public class ShootingController : MonoBehaviour
                 boss.CharacterHitDamage(giveDamageOf);
 
                 //血液效果
+                GameObject bloodEfectGo = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+                Destroy(bloodEfectGo, 0.5f);
 
                 //如果有守卫看见尸体，则提示守卫
             }
@@ -97,6 +113,7 @@ public class ShootingController : MonoBehaviour
         currentMagzine--;
 
         //播放射击声音
+        audioSource.PlayOneShot(shootingSoundClip);
     }
 
     private IEnumerator Reload()
@@ -104,6 +121,8 @@ public class ShootingController : MonoBehaviour
         isReloading = true;
 
         //换弹声音
+        yield return new WaitForSeconds(0.7f);//延迟，同步动画
+        audioSource.PlayOneShot(reloadingSoundClip);
 
         int ammoToReload = Mathf.Min(magzineCapacity - currentMagzine, currentAmmo);
 

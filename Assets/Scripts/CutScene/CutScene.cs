@@ -25,6 +25,8 @@ public class CutScene : MonoBehaviour
     private bool camera4Finished = false;
 
     //“Ù∆µ
+    //[SerializeField] private AudioSource audioSource;
+    //[SerializeField] private AudioClip startSound;
 
 
     private void Start()
@@ -36,6 +38,13 @@ public class CutScene : MonoBehaviour
 
         ActiveCamera(camera1);
         playerCamera.SetActive(false);
+        
+
+        //if (audioSource != null && startSound != null)
+        //{
+        //    audioSource.clip = startSound;
+        //    audioSource.Play();
+        //}
     }
 
     private void ActiveCamera(GameObject cameraToActivate)

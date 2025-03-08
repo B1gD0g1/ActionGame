@@ -9,8 +9,8 @@ public class ClimbingController : MonoBehaviour
     private PlayerMovement playerMovement;
 
 
-    [Header("两种动画随机选择")]
-    public bool hangingIdleRandom;
+    //[Header("两种动画随机选择")]
+    //public bool hangingIdleRandom;
 
 
     private void Awake()
@@ -111,16 +111,16 @@ public class ClimbingController : MonoBehaviour
     }
 
     //随机播放Idle动画
-    public void PlayIdleAnimationRandomly()
-    {
-        float randomFloat = Random.value;// 生成0到1之间的随机float
-        if (randomFloat > 0.5f)
-        {
-            hangingIdleRandom = true;
-        }
-        else
-        {
-            hangingIdleRandom = false;
-        }
-    }
+    //public void PlayIdleAnimationRandomly()
+    //{
+    //    float randomFloat = Random.value;// 生成0到1之间的随机float
+    //    if (randomFloat > 0.5f)
+    //    {
+    //        hangingIdleRandom = true;
+    //    }
+    //    else
+    //    {
+    //        hangingIdleRandom = false;
+    //    }
+    //}
 }

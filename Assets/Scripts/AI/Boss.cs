@@ -11,6 +11,10 @@ public class Boss : MonoBehaviour
     private bool isDead = false;
 
 
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip endSound;
+
+
     private void Start()
     {
         animator = GetComponent<Animator>();
@@ -33,5 +37,10 @@ public class Boss : MonoBehaviour
     private void CharacterDie()
     {
         //Ω· ¯…˘“Ù ending voice sound
+        if (audioSource != null && endSound != null)
+        {
+            audioSource.clip = endSound;
+            audioSource.Play();
+        }
     }
 }
