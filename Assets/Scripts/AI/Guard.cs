@@ -44,6 +44,16 @@ public class Guard : MonoBehaviour
     [SerializeField] private GameObject cautionUI;
     private DeadBodyPick deadBodyPick;
 
+    [Header("脚步声音")]
+    private AudioSource footstepAudioSource;
+    [SerializeField] private AudioClip footstepClip;
+    [SerializeField] private float footstepIntercal = 0.5f;
+    private float footstepTimer;
+
+    [Header("特效")]
+    [SerializeField] private ParticleSystem muzzleFlash;
+    [SerializeField] private GameObject bloodEffect;
+
 
     private void Start()
     {
@@ -51,6 +61,7 @@ public class Guard : MonoBehaviour
         animator = GetComponent<Animator>();
         deadBodyPick = GetComponent<DeadBodyPick>();
         deadBodyPick.enabled = false;
+        footstepAudioSource = GetComponent<AudioSource>();
 
         currentMovingSpeed = movingSpeed;
         presentHealth = characterHealth;
@@ -112,6 +123,8 @@ public class Guard : MonoBehaviour
         animator.SetBool("Walk", true);
         animator.SetBool("Shoot", false);
 
+        HandleFootstepSound();
+
         if (Vector3.Distance(transform.position, targetWayPoint.position) < 0.1f)
         {
             if (movingForward)
@@ -151,6 +164,7 @@ public class Guard : MonoBehaviour
         animator.SetBool("Shoot", false);
 
         currentMovingSpeed = runningSpeed;
+        HandleFootstepSound();
     }
 
     private void ShootPlayer()
@@ -179,9 +193,14 @@ public class Guard : MonoBehaviour
                 PlayerMovement player = hit.transform.GetComponent<PlayerMovement>();
                 if (player != null)
                 {
+                    //枪口火光
+                    muzzleFlash.Play();
+
                     player.CharacterHitDamage(giveDamageOf);
 
-                    //视觉效果
+                    //血液效果
+                    GameObject bloodEffectGo = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+                    Destroy(bloodEffect, 0.5f);
                 }
             }
 
@@ -221,5 +240,18 @@ public class Guard : MonoBehaviour
         //disable the UI 
         alertUI.SetActive(false);
         cautionUI.SetActive(false);
+    }
+
+    private void HandleFootstepSound()
+    {
+        if (footstepAudioSource != null && footstepClip != null)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0f)
+            {
+                footstepAudioSource.PlayOneShot(footstepClip);
+                footstepTimer = footstepIntercal;
+            }
+        }
     }
 }

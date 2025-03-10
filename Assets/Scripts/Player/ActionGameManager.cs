@@ -23,6 +23,12 @@ public class ActionGameManager : MonoBehaviour
     [SerializeField] private float alertRadius;
     [SerializeField] private LayerMask guardLayer;
 
+    [Header("ÎäÆ÷UI")]
+    [SerializeField] private GameObject rifleImage;
+    [SerializeField] private GameObject pistolImage;
+    private GameObject[] weaponImages;
+
+
 
     private void Start()
     {
@@ -32,6 +38,7 @@ public class ActionGameManager : MonoBehaviour
         weaponAnimBools = new string[] { pistolAnimBool, rifleAnimBool };
         player = GameObject.FindGameObjectWithTag("Player");
 
+        weaponImages = new GameObject[] { pistolImage, rifleImage };
 
         DeactivateAllWeapons();
     }
@@ -57,7 +64,11 @@ public class ActionGameManager : MonoBehaviour
             GameObject currentWeapon = weapons[currentWeaponIndex];
             string currentAnimBool = weaponAnimBools[currentWeaponIndex];
 
+            GameObject currentWeaponImage = weaponImages[currentWeaponIndex];
+
             currentWeapon.SetActive(true);
+            currentWeaponImage.SetActive(true);
+
             animator.SetBool(currentAnimBool, true);
         }
     }
@@ -67,6 +78,11 @@ public class ActionGameManager : MonoBehaviour
         foreach (var weapon in weapons)
         {
             weapon.SetActive(false);
+        }
+
+        foreach (var weaponImage in weaponImages)
+        {
+            weaponImage.SetActive(false);
         }
 
         foreach (var animBool in weaponAnimBools)
