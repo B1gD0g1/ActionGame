@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ccb4db2da44eec944a228ebc8ba9f5d2, type: 3}
+  m_Name: NPCDialogue
+  m_EditorClassIdentifier: 
+  dialogueLines:
+  - id: 0
+    text: Hello, Sir. It's a lovely day
+  - id: 1
+    text: Hi, Sir. Have a good day
+  - id: 2
+    text: What you're wearing is so tasteful. I really like this style.

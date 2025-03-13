@@ -38,6 +38,8 @@ public class InputManager : MonoBehaviour
     [SerializeField] private bool changeWeaponInput;
     [SerializeField] private bool pauseInput;
     [SerializeField] private bool FInput;
+    [SerializeField] private bool interactInput;
+
 
 
 
@@ -70,6 +72,9 @@ public class InputManager : MonoBehaviour
             playerControls.PlayerActions.Jump.canceled += InputManager_OnJumpCanceled;
             playerControls.PlayerActions.JumpFromHang.performed += InputManager_OnJumpFromHangPerformed;
             playerControls.PlayerActions.JumpFromHang.canceled += InputManager_OnJumpFromHangCanceled;
+
+            playerControls.PlayerActions.Interact.performed += i => interactInput = true;
+            playerControls.PlayerActions.Interact.canceled += i => interactInput = false;
 
             playerControls.PlayerActions.Shoot.performed += i => shootInput = true;
             playerControls.PlayerActions.Shoot.canceled += i => shootInput = false;
@@ -375,5 +380,10 @@ public class InputManager : MonoBehaviour
     public bool GetFInput()
     {
         return FInput;
+    }
+
+    public bool GetInteractInput()
+    {
+        return interactInput;
     }
 }
