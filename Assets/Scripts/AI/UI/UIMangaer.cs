@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class UIMangaer : MonoBehaviour
 {
+    //通知对话结束,也就是字幕消失的时间
+    public event Action OnDialogueEnd;
+
 
     [Header("字幕")]
     [SerializeField] private SubtitleUI subtitleUI;
@@ -47,5 +50,8 @@ public class UIMangaer : MonoBehaviour
         //淡出字幕 0.5秒
         subtitleUI.FadeOut(0.5f);
         subtitleUI.SetSubtitleText("");//清空文本
+
+        //触发事件，通知对话结束
+        OnDialogueEnd?.Invoke();
     }
 }

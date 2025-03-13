@@ -6,8 +6,8 @@ public class NPCInteractable : MonoBehaviour
 {
 
     private Animator animator;
-    private NPCHeadLookAt npcHeadLookAt;
-    [SerializeField] private UIMangaer uiMangaer;
+    [SerializeField] private NPCHeadLookAt npcHeadLookAt;
+    [SerializeField] private UIMangaer uiManager;
 
 
     [Header("Ì¨´Ê")]
@@ -18,6 +18,38 @@ public class NPCInteractable : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         npcHeadLookAt = GetComponent<NPCHeadLookAt>();
+
+        if (uiManager == null)
+        {
+            uiManager = FindObjectOfType<UIMangaer>();
+        }
+
+        if (npcHeadLookAt == null)
+        {
+            Debug.LogError("NPCHeadLookAt component not found on " + gameObject.name);
+        }
+    }
+
+    private void OnEnable()
+    {
+        uiManager.OnDialogueEnd += UiManager_OnEndInteraction;
+    }
+
+    private void OnDisable()
+    {
+        uiManager.OnDialogueEnd -= UiManager_OnEndInteraction;
+    }
+
+    private void UiManager_OnEndInteraction()
+    {
+        if (npcHeadLookAt != null)
+        {
+            npcHeadLookAt.StopLooking();
+        }
+        else
+        {
+            Debug.LogError("npcHeadLookAt is null when trying to StopLooking!");
+        }
     }
 
     public void Interact(Transform interactTransform)
@@ -53,7 +85,7 @@ public class NPCInteractable : MonoBehaviour
             if (dialogueLine != null)
             {
                 //ÏÔÊ¾×ÖÄ»
-                uiMangaer.ShowSubtitle(dialogueLine.text, 5f, true, 0.03f);
+                uiManager.ShowSubtitle(dialogueLine.text, 5f, true, 0.03f);
             }
         }
     }
