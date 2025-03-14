@@ -21,7 +21,10 @@ public class PlayerInteract : MonoBehaviour
             {
                 if (collider.TryGetComponent(out NPCInteractable npcInteractable))
                 {
-                    npcInteractable.Interact(transform);
+                    if (!npcInteractable.IsDead)
+                    {
+                        npcInteractable.Interact(transform);
+                    }
                 }
             }
         }

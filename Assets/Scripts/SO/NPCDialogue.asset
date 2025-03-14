@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogueLines:
   - id: 0
-    text: Hello, Sir. It's a lovely day
+    text: "\u4F60\u597D\u5148\u751F\uFF0C\u4ECA\u5929\u5929\u6C14\u4E0D\u9519\u54E6\u3002"
   - id: 1
-    text: Hi, Sir. Have a good day
+    text: "\u563F\uFF0C\u4F60\u4ECA\u5929\u770B\u8D77\u6765\u5F88\u6709\u6D3B\u529B\u554A\uFF01"
   - id: 2
-    text: What you're wearing is so tasteful. I really like this style.
+    text: "\u60A8\u597D\uFF0C\u6709\u4EC0\u4E48\u9700\u8981\u5E2E\u5FD9\u7684\u5417\uFF1F"

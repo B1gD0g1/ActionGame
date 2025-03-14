@@ -9,6 +9,8 @@ public class WalkCharacterAI : MonoBehaviour
     private Animator animator;
     private DeadBodyPick deadBodyPick;
     private CharacterController characterController;
+    private NPCInteractable npcInteractable;
+    [SerializeField] private GameObject playerInteractUIGameObject;
 
 
     [SerializeField] private float walkSpeed;
@@ -24,6 +26,7 @@ public class WalkCharacterAI : MonoBehaviour
         animator = GetComponent<Animator>();
         capsuleCollider = GetComponent<CapsuleCollider>();
         characterController = GetComponent<CharacterController>();
+        npcInteractable = GetComponent<NPCInteractable>();
         deadBodyPick = GetComponent<DeadBodyPick>();
         deadBodyPick.enabled = false;
         characterController.enabled = false;
@@ -75,5 +78,7 @@ public class WalkCharacterAI : MonoBehaviour
         navAgent.enabled = false;
         capsuleCollider.enabled = false;
         characterController.enabled = true;
+        npcInteractable.IsDead = true;
+        playerInteractUIGameObject.SetActive(false);
     }
 }

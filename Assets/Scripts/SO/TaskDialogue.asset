@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogueLines:
   - id: 0
-    text: Hi, mission target is located in the temple
+    text: "\u4F60\u597D\uFF0C\u4EFB\u52A1\u76EE\u6807\u4F4D\u4E8E\u5723\u6BBF\u4E2D\u3002"

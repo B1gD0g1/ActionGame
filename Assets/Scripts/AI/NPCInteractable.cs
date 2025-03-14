@@ -14,6 +14,9 @@ public class NPCInteractable : MonoBehaviour
     [SerializeField] private NPCDialogue npcDialogue;
     private int dialogueIndex = 0;
 
+    public bool IsDead { get; set; }    
+
+
     private void Awake()
     {
         animator = GetComponent<Animator>();

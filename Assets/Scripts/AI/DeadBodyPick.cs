@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class DeadBodyPick : MonoBehaviour
 {
+
     private InputManager inputManager;
     private PlayerMovement playerMovement;
     private CharacterController characterController;
@@ -80,6 +81,13 @@ public class DeadBodyPick : MonoBehaviour
         playerMovement.isPicking = false;
         characterController.enabled = true;
         transform.parent = null;
+
+        NPCInteractable npcInteractable = GetComponent<NPCInteractable>();
+        if (npcInteractable != null)
+        {
+            npcInteractable.enabled = false;//Ê§»î
+        }
+
 
         playerAnimator.Play("Basic Locomotion");
     }

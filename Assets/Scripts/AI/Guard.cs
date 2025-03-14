@@ -200,7 +200,7 @@ public class Guard : MonoBehaviour
 
                     //ÑªÒºÐ§¹û
                     GameObject bloodEffectGo = Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
-                    Destroy(bloodEffect, 0.5f);
+                    Destroy(bloodEffectGo, 0.5f);
                 }
             }
 
