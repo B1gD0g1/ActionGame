@@ -7,6 +7,14 @@ public class NPCDialogue : ScriptableObject
 {
     public DialogueLine[] dialogueLines;
 
+    public DialogueLine DialogueLine
+    {
+        get => default;
+        set
+        {
+        }
+    }
+
     //通过ID获取指定台词
     public DialogueLine GetDialogueById(int id)
     {

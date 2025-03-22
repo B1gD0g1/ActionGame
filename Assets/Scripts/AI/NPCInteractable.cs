@@ -14,8 +14,15 @@ public class NPCInteractable : MonoBehaviour
     [SerializeField] private NPCDialogue npcDialogue;
     private int dialogueIndex = 0;
 
-    public bool IsDead { get; set; }    
+    public bool IsDead { get; set; }
 
+    public NPCHeadLookAt NPCHeadLookAt
+    {
+        get => default;
+        set
+        {
+        }
+    }
 
     private void Awake()
     {

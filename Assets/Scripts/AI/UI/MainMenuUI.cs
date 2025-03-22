@@ -7,7 +7,9 @@ public class MainMenuUI : MonoBehaviour
 {
 
     [SerializeField] private LoadManager loadManager;
+    [SerializeField] private OptionsUI optionsUI;
     [SerializeField] private Button playButton;
+    [SerializeField] private Button optionsButton;
     [SerializeField] private Button quitButton;
 
 
@@ -15,12 +17,18 @@ public class MainMenuUI : MonoBehaviour
     private void Awake()
     {
         playButton.onClick.AddListener(Play);
+        optionsButton.onClick.AddListener (Options);
         quitButton.onClick.AddListener(Quit);
     }
 
     private void Play()
     {
         loadManager.Load(LoadManager.Scene.GameScene);
+    }
+
+    private void Options()
+    {
+        optionsUI.Show();
     }
 
     private void Quit()

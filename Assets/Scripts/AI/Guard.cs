@@ -62,6 +62,7 @@ public class Guard : MonoBehaviour
         deadBodyPick = GetComponent<DeadBodyPick>();
         deadBodyPick.enabled = false;
         footstepAudioSource = GetComponent<AudioSource>();
+        footstepAudioSource.rolloffMode = AudioRolloffMode.Linear;
 
         currentMovingSpeed = movingSpeed;
         presentHealth = characterHealth;
